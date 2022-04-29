@@ -10,41 +10,37 @@ library(lubridate)
 # CREATING Y (K x (TxN)) VARIABLE =
 
 HOURS               = read_abs(series_id ="A2304428W")
-HHSAVINGS           = read_abs(series_id = "A2323382F") 
-GDP                 = read_abs(series_id = "A2304370T")
-CPI                 = read_abs(series_id = "A3604506F")
-VACANCIES           = read_abs(series_id = "A590698F") 
-EMPLOYMENT          = read_abs(series_id = "A84932381A") 
-
 HOURS               = ts(HOURS[c(6)], start=c(1959,3), frequency = 4, names=c("Hours Worked"))
-
-y                   = full_join(HOURS, HHSAVINGS[c(6)], GDP[c(6)], CPI[c(6)],VACANCIES[c(6)], EMPLOYMENT[c(6)])
 
 HHSAVINGS           = read_abs(series_id = "A2323382F") 
 HHSAVINGS           = ts(HHSAVINGS[c(6)], start=c(1959,3), frequency = 4, names=c("HHSAVINGS"))
 
-GDP                 = read_abs(series_id = "A2304370T")
-GDP                 = ts(GDP[c(6)], start=c(1959,3), frequency = 4, names=c("GDP"))
+RGDP                = as.data.frame(read.csv("RGDP.csv",header=TRUE))
+RGDP                = ts(RGDP$value, start=c(1959,3), frequency = 4, names=c("GDP"))
 
 CPI                 = read_abs(series_id = "A3604506F")
-CPI                 = ts(CPI[c(6)], start=c(1959,3), frequency = 4, names=c("CPI"))
+CPI                 = ts(CPI[c(6)], start=c(1948,3), frequency = 4, names=c("CPI"))
 
 VACANCIES           = read_abs(series_id = "A590698F") 
-VACANCIES           = ts(VACANCIES[c(6)], start=c(1959,3), frequency = 4, names=c("CPI"))
+VACANCIES           = ts(VACANCIES[c(6)], start=c(1979,2), frequency = 4, names=c("VACANCIES"))
 
+EMPLOYMENT          = read_abs(series_id = "A84932381A") 
+EMPLOYMENT          = ts(EMPLOYMENT[c(6)], start=c(1984,3), frequency = 4, names=c("EMPLOYMENT"))
 
-EMPLOYMENT          = read_rba(series_id = "A84932381A") 
-EMPLOYMENT          = ts(EMPLOYMENT[c(6)], start=c(1959,3), frequency = 4, names=c("CPI"))
+WAGES               = as.data.frame(read.csv("TotalComp.csv",header=TRUE))
+WAGES               = ts(WAGES$value, start=c(1984,3), frequency = 4, names=c("WAGES"))
 
+RETAIL_SALES        = as.data.frame(read.csv("RetSal.csv",header=TRUE))
+RETAIL_SALES_M      = ts(RETAIL_SALES$value, start=c(1970,1), frequency = 12, names=c("CPI"))
+RETAIL_SALES_Q      = aggregate.ts(RETAIL_SALES_M, nfrequency = 4)
 
+BANKBILL_90D        = as.data.frame(read.csv("90_Day_Bank_Bills.csv",header=TRUE))
+BANKBILL_90D_M      = ts(BANKBILL_90D$value, start=c(1970,1), frequency = 12, names=c("CPI"))
+BANKBILL_90D_M_Q    = aggregate.ts(BANKBILL_90D_M, nfrequency = 4)
 
+TOT                 = read_abs(series_id = "A2304400V") 
+TOT                 = ts(TOT$value, start=c(1959,3), frequency = 4, names=c("WAGES"))
 
-
-VAR6                = read_rba(series_id = "GLFSURSA") 
-VAR7                = read_rba(series_id = "GLFSURSA") 
-VAR8                = read_rba(series_id = "GLFSURSA") 
-VAR9                = read_rba(series_id = "GLFSURSA") 
-VAR10               = read_rba(series_id = "GLFSURSA") 
 
 GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
 GerGNP              = matrix(GermanGNP)
@@ -53,13 +49,11 @@ plot.ts(GermanGNP, lwd=3, col="purple", main="")
 
 
 # INPUTTING DATA 
-X                   = as.matrix(NA, c(1:100))
-Y                   = as.matrix(rw[1:100])
+x                   = matrix (1, K, 1)
+X                   =  matrix(1, T, K)
+Y                   = matrix(1, T, N)
 
 # SPECIFYING HYPER-PARAMETERS OF PRIOR DISTRIBUTION   
-priors = c(1,2,3,4,5,6,7)
-names(priors) = c("S_BAR(Ka)","V_BAR(KA)","ALPHA_BAR(Ke)","BETA_BAR(Ke)","A_BAR","S_BAR", "V_BAR")
-
 S = c(100,1000)
 a0 = 2                      # TO BE CHANGED?
 e0 = 2                      # TO BE CHANGED?
@@ -77,14 +71,19 @@ colnames(posterior3) = c("Ka","Ke")
 hyper             = c(1,2,3,4,5,6,7)
 names(hyper)      = c("S_BAR(Ka)","V_BAR(KA)","ALPHA_BAR(Ke)","BETA_BAR(Ke)","A_uBAR","S_BAR", "V_BAR")
 
-T = 170
-K = 10
+T = 170             #=nrow(Y)
+K = 1+(4*N)         #=ncol(X)
+N = 10
 
 # STARTING VALUES 
-aux_A           = rep(0, K)
-aux_E           = matrix(0, K, K)
 aux_ka          = 2
 aux_ke          = 2
+aux_A           = matrix(0, K, N)
+aux_E           = matrix(1, N, N)
+aux_E           = rep(NA,N)
+for (n in 1:N){
+  aux_E[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
+}
 
 # POSTERIOR DRAWS
 posterior_A     = matrix(NA, S, K)
@@ -96,10 +95,10 @@ for (s in 1:S) {
   
   # SAMPLE Ke
   alpha_bar_ke    = hyper[3] - ((hyper[7]*K))/2
-  beta_bar_ke     = hyper[4] + as.numeric(0.5*trace(solve(aux_E)%*%hyper[6]))
+  beta_bar_ke     = hyper[4] + as.numeric(0.5*trace(solve(aux_E)%*%hyper[6])) 
   
   # SAMPLE Ka
-  s_bar_ka        = as.numeric(trace(solve(aux_E)%*%t(aux_A-hyper[5])%*%(aux_A-hyper[5])) + hyper[1])
+  s_bar_ka        = as.numeric(tr(solve(aux_E)%*%t(aux_A-hyper[5])%*%(aux_A-hyper[5])) + hyper[1])
   v_bar_ka        = hyper[2] + N*K
   
   # PARAMETERS OF MVNIW POSTERIOR
