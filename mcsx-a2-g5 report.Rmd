@@ -1,0 +1,16 @@
+---
+title: "mcxs-a2-g5 report"
+author: "gw"
+date: "29/04/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Macroeconometrics Assignment 2
+
+````{r}
+2+2
+`````
