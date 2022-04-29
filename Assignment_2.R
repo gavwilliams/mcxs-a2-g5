@@ -6,40 +6,53 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(lubridate)
-
+library(reticulate)
 # CREATING Y (K x (TxN)) VARIABLE =
 
-HOURS               = read_abs(series_id ="A2304428W")
-HOURS               = ts(HOURS[c(6)], start=c(1959,3), frequency = 4, names=c("Hours Worked"))
+HOURS               = as.data.frame(read_abs(series_id ="A2304428W"))
+HOURS               = HOURS %>%slice(-c(1:80))
+HOURS               = ts(HOURS[c(6)], start=c(1979,3), frequency = 4, names=c("Hours Worked"))
 
-HHSAVINGS           = read_abs(series_id = "A2323382F") 
-HHSAVINGS           = ts(HHSAVINGS[c(6)], start=c(1959,3), frequency = 4, names=c("HHSAVINGS"))
+HHSAVINGS           = as.data.frame(read_abs(series_id = "A2323382F")) 
+HHSAVINGS           = HHSAVINGS %>%slice(-c(1:80))
+HHSAVINGS           = ts(HHSAVINGS[c(6)], start=c(1979,3), frequency = 4, names=c("HHSAVINGS"))
 
 RGDP                = as.data.frame(read.csv("RGDP.csv",header=TRUE))
-RGDP                = ts(RGDP$value, start=c(1959,3), frequency = 4, names=c("GDP"))
+RGDP                = RGDP %>%slice(-c(1:80))
+RGDP                = ts(RGDP$value, start=c(1979,3), frequency = 4, names=c("GDP"))
 
-CPI                 = read_abs(series_id = "A3604506F")
-CPI                 = ts(CPI[c(6)], start=c(1948,3), frequency = 4, names=c("CPI"))
+CPI                 = as.data.frame(read_abs(series_id = "A3604506F"))
+CPI                 = CPI %>%slice(-c(1:124))
+CPI                 = ts(CPI[c(6)], start=c(1979,3), frequency = 4, names=c("CPI"))
 
-VACANCIES           = read_abs(series_id = "A590698F") 
+VACANCIES           = read_abs(series_id = "A590698F")
+VACANCIES           = VACANCIES %>%slice(-c(1:124))
+
 VACANCIES           = ts(VACANCIES[c(6)], start=c(1979,2), frequency = 4, names=c("VACANCIES"))
 
-EMPLOYMENT          = read_abs(series_id = "A84932381A") 
-EMPLOYMENT          = ts(EMPLOYMENT[c(6)], start=c(1984,3), frequency = 4, names=c("EMPLOYMENT"))
+EMPLOYMENT          = as.data.frame(read_abs(series_id = "A84423043C"))
+EMPLOYMENT          = EMPLOYMENT %>%slice(-c(1:7))
+EMPLOYMENT_M        = ts(EMPLOYMENT$value, start=c(1979,3), frequency = 12, names=c("EMPLOYMENT"))
+EMPLOYMENT_M_Q      = aggregate.ts(EMPLOYMENT_M, nfrequency = 4)
 
 WAGES               = as.data.frame(read.csv("TotalComp.csv",header=TRUE))
-WAGES               = ts(WAGES$value, start=c(1984,3), frequency = 4, names=c("WAGES"))
+WAGES               = ts(WAGES$value, start=c(1959,3), frequency = 4, names=c("WAGES"))
 
 RETAIL_SALES        = as.data.frame(read.csv("RetSal.csv",header=TRUE))
+RETAIL_SALES        = RETAIL_SALES %>%slice(-c(1:176))
 RETAIL_SALES_M      = ts(RETAIL_SALES$value, start=c(1970,1), frequency = 12, names=c("CPI"))
 RETAIL_SALES_Q      = aggregate.ts(RETAIL_SALES_M, nfrequency = 4)
 
 BANKBILL_90D        = as.data.frame(read.csv("90_Day_Bank_Bills.csv",header=TRUE))
+BANKBILL_90D        = BANKBILL_90D %>% slice(-c(1:176))
+
 BANKBILL_90D_M      = ts(BANKBILL_90D$value, start=c(1970,1), frequency = 12, names=c("CPI"))
 BANKBILL_90D_M_Q    = aggregate.ts(BANKBILL_90D_M, nfrequency = 4)
 
 TOT                 = read_abs(series_id = "A2304400V") 
 TOT                 = ts(TOT$value, start=c(1959,3), frequency = 4, names=c("WAGES"))
+
+
 
 
 GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
