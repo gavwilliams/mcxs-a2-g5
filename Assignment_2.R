@@ -7,10 +7,10 @@ library(dplyr)
 library(ggplot2)
 library(lubridate)
 library(reticulate)
-# CREATING Y (K x (TxN)) VARIABLE =
+# DATA COLLECTION AND TRANSFORMING
+############################################################
 
-TT = nrow(HOURS)
-T  = TT - 1
+
 
 HOURS               = read_abs(series_id ="A2304428W")
 HOURS               = HOURS %>%slice(-c(1:101))
@@ -56,6 +56,20 @@ TOT                 = read_abs(series_id = "A2304400V")
 TOT                 = TOT %>% slice(-c(1:101))
 TOT                 = TOT[c(4,6)]
 
+# setup
+############################################################
+N       = 10
+p       = 4
+K       = 1+p*N
+S       = 50000
+h       = #TBD
+  
+  TT = nrow(Y)
+T  = TT - 1
+
+# Create Y and X
+############################################################
+
 y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
 y_VEC2              = merge(RGDP, CPI, by = 'date')
 y_VEC3              = merge(GDP_PHW, NET_SAVINGS, by ='date')
@@ -79,12 +93,26 @@ X                   = cbind(X,
                             y[5:nrow(y)-4,]
                             )
           
-T = nrow(Y) 
 ##GRAPHING CODE
 #GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
 #GerGNP              = matrix(GermanGNP)
 #colnames(GerGNP)    = "German GNP"
 #plot.ts(GermanGNP, lwd=3, col="purple", main="")
+
+
+# prior distribution COPIED FROM L10
+############################################################
+kappa.1     = 0.02^2
+kappa.2     = 100
+A.prior     = matrix(0,K,N)
+V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+V.prior.inv = diag(1/c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+s.ols       = rep(NA,N)
+for (n in 1:N){
+  s.ols[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
+}
+S.prior     = diag(s.ols)
+nu.prior    = N+1
 
 
 
@@ -106,9 +134,6 @@ colnames(posterior3) = c("Ka","Ke")
 hyper             = c(1,2,3,3,1,3,1)
 names(hyper)      = c("S_BAR(Ka)","V_BAR(KA)","ALPHA_BAR(Ke)","BETA_BAR(Ke)","A_uBAR","S_BAR", "V_BAR")
 
-T = nrow(Y)
-K = ncol(X)
-N = 10
 
 # STARTING VALUES 
 aux_ka          = 2
