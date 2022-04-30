@@ -10,8 +10,6 @@ library(reticulate)
 # DATA COLLECTION AND TRANSFORMING
 ############################################################
 
-
-
 HOURS               = read_abs(series_id ="A2304428W")
 HOURS               = HOURS %>%slice(-c(1:101))
 HOURS               = HOURS[c(4,6)]
@@ -58,18 +56,17 @@ TOT                 = TOT[c(4,6)]
 
 # setup
 ############################################################
-N       = 10
-p       = 4
-K       = 1+p*N
-S       = 50000
-h       = #TBD
+N                   = 10
+p                   = 4
+K                   = 1+p*N
+S                   = 50000
+h                   = #TBD
   
-  TT = nrow(Y)
-T  = TT - 1
+TT                  = nrow(Y)
+T                   = TT - 1
 
 # Create Y and X
 ############################################################
-
 y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
 y_VEC2              = merge(RGDP, CPI, by = 'date')
 y_VEC3              = merge(GDP_PHW, NET_SAVINGS, by ='date')
@@ -99,20 +96,23 @@ X                   = cbind(X,
 #colnames(GerGNP)    = "German GNP"
 #plot.ts(GermanGNP, lwd=3, col="purple", main="")
 
+## MLE
+A_HAT                 = (1/(t(X)%*%X))%*%t(X)%*%Y
+SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)
+round(A_HAT,3)
+round(SIGMA_HAT,3)
+round(cov2cor(SIGMA_HAT),3)
 
-# prior distribution COPIED FROM L10
+
+# PRIOR DISTRIBUTION COPIED FROM L10
 ############################################################
-kappa.1     = 0.02^2
-kappa.2     = 100
-A.prior     = matrix(0,K,N)
-V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
-V.prior.inv = diag(1/c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
-s.ols       = rep(NA,N)
-for (n in 1:N){
-  s.ols[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
-}
-S.prior     = diag(s.ols)
-nu.prior    = N+1
+KAPPA_P_A   = 0.02^2
+KAPPA_P_E   = 100
+A_PRIOR     = matrix(0,K,N)
+V_PRIOR     = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%rep(1,N)))
+V_PRIOR_INV = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%rep(1,N)))
+S_PRIOR     = diag(diag(SIGMA_HAT))
+NU_PRIOR    = N+1
 
 
 
@@ -139,10 +139,7 @@ names(hyper)      = c("S_BAR(Ka)","V_BAR(KA)","ALPHA_BAR(Ke)","BETA_BAR(Ke)","A_
 aux_ka          = 2
 aux_ke          = 2
 aux_A           = matrix(0, K, N)
-aux_E           = rep(NA,N)
-for (n in 1:N){
-  aux_E[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
-}
+aux_E           = rep(1,N)
 aux_E           = diag(aux_E)
 
 
