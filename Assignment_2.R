@@ -65,7 +65,7 @@ Y5 = inner_join(Y3, Y4, by = 'date')
 
 Y  = inner_join(Y5, Y1, by = 'date')
 Y  = Y %>% slice(-c(1:8))
-Y  = ts(Y[c(1:10)], start=c(1986,12), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
+Y  = ts(Y[c(2:11)], start=c(1986,4), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
 Y   = Y[,c(1:10)] # GETS RID OF TIME
 
 nrow(Y)
@@ -103,7 +103,7 @@ colnames(posterior2) = c("E")
 colnames(posterior3) = c("Ka","Ke")
 
 # SPECIFYING HYPER-PARAMETERS
-hyper             = c(1,2,3,4,5,6,7)
+hyper             = c(1,2,3,3,1,3,1)
 names(hyper)      = c("S_BAR(Ka)","V_BAR(KA)","ALPHA_BAR(Ke)","BETA_BAR(Ke)","A_uBAR","S_BAR", "V_BAR")
 
 T = 170             #=nrow(Y)
@@ -129,18 +129,18 @@ posterior_ke    = matrix(NA, S)
 for (s in 1:S) {
   
   # SAMPLE Ke
-  alpha_bar_ke    = hyper[3] - ((hyper[7]*K))/2
-  beta_bar_ke      = hyper[4] + 0.5*sum(diag(solve(aux_E)*hyper[6]))
+  alpha_bar_ke    = hyper[3] - ((hyper[7]*N))/2
+  beta_bar_ke     = hyper[4] + 0.5*sum(diag(solve(aux_E)*hyper[6]))
   
   # SAMPLE Ka
   s_bar_ka        = as.numeric(sum(diag((solve(aux_E)%*%t(aux_A-hyper[5])%*%(aux_A-hyper[5])) + hyper[1])))
   v_bar_ka        = hyper[2] + N*K
   
   # PARAMETERS OF MVNIW POSTERIOR
-  V_bar_inv       = crossprod(X) + solve(aux_ka*hyper[7])
+  V_bar_inv       = as.numeric(crossprod(X) + solve(aux_ka*hyper[7]))
   V_bar           = as.numeric(solve(V_bar_inv))
   A_bar           = as.numeric(V_bar %*% (t(X)%*%Y) + solve(aux_ka*V_bar) %*% hyper[5])
-  s_bar           = as.numeric(crossprod(Y) + aux_ke*hyper[6] + t(aux_A)%*%(aux_ka*hyper[7])%*%aux_A + t(A_bar)%*%solve(V_bar)%*%A_bar )
+  s_bar           = as.numeric(crossprod(Y) + aux_ke*hyper[6] + t(aux_A)*solve((aux_ka*hyper[7]))*aux_A + t(A_bar)%*%solve(V_bar)%*%A_bar )
   
   # SAMPLE -- aux_ka
   aux_ka          = s_bar_ka/rchisq(1, v_bar_ka)
@@ -148,6 +148,7 @@ for (s in 1:S) {
   
   # SAMPLE -- aux_ke
   aux_ke          = rgamma(1, shape = alpha_bar_ke, scale = 1/beta_bar_ke)
+  posterior_ke    = aux_ke
   
   
   # SAMPLE -- aux_A & aux_E
