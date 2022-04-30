@@ -8,85 +8,85 @@ library(ggplot2)
 library(lubridate)
 library(reticulate)
 # CREATING Y (K x (TxN)) VARIABLE =
-HOURS               = as.data.frame(read_abs(series_id ="A2304428W"))
-HOURS               = HOURS %>%slice(-c(1:104))
-HOURS               = ts(HOURS[c(6)], start=c(1984,4), frequency = 4, names=c("Hours Worked"))
 
-HHSAVINGS           = as.data.frame(read_abs(series_id = "A2323382F")) 
-HHSAVINGS           = HHSAVINGS %>%slice(-c(1:104))
-HHSAVINGS           = ts(HHSAVINGS[c(6)], start=c(1984,4), frequency = 4, names=c("HHSAVINGS"))
+TT = nrow(HOURS)
+T  = TT - 1
 
-RGDP                = as.data.frame(read_abs(series_id = "A2304414J"))
+HOURS               = read_abs(series_id ="A2304428W")
+HOURS               = HOURS %>%slice(-c(1:101))
+HOURS               = HOURS[c(4,6)]
+
+HHSAVINGS           = read_abs(series_id = "A2323382F")
+HHSAVINGS           = HHSAVINGS %>%slice(-c(1:101))
+HHSAVINGS           = HHSAVINGS[c(4,6)]
+
+RGDP                = read_abs(series_id = "A2304414J")
 RGDP                = RGDP %>%slice(-c(1:101))
-RGDP                = ts(RGDP$value, start=c(1984,4), frequency = 4, names=c("GDP"))
+RGDP                = RGDP[c(4,6)]
 
-CPI                 = as.data.frame(read_abs(series_id = "A3604506F"))
+CPI                 = read_abs(series_id = "A3604506F")
 CPI                 = CPI %>%slice(-c(1:145))
-CPI                 = ts(CPI[c(6)], start=c(1984,4), frequency = 4, names=c("CPI"))
+CPI                 = CPI[c(4,6)]
 
-VACANCIES           = as.data.frame(read_abs(series_id = "A590698F"))
+VACANCIES           = read_abs(series_id = "A590698F")
 VACANCIES           = VACANCIES %>%slice(-c(1:22))
-VACANCIES           = ts(VACANCIES[c(6)], start=c(1984,4), frequency = 4, names=c("VACANCIES"))
+VACANCIES           = VACANCIES[c(4,6)]
 
-EMPLOYMENT          = as.data.frame(read_abs(series_id = "A84423043C"))
-EMPLOYMENT          = EMPLOYMENT %>%slice(-c(1:82))
-EMPLOYMENT_M        = ts(EMPLOYMENT$value, start=c(1984,12), frequency = 12, names=c("EMPLOYMENT"))
-EMPLOYMENT_M_Q      = aggregate.ts(EMPLOYMENT_M, nfrequency = 4)
+VALUE_ADDED         = read_abs(series_id = "A3606058X")
+VALUE_ADDED         = VALUE_ADDED %>%slice(-c(1:101))
+VALUE_ADDED         = VALUE_ADDED[c(4,6)]
 
-WAGES               = as.data.frame(read.csv("TotalComp.csv",header=TRUE))
-WAGES               = WAGES %>%slice(-c(1:101))
-wAGES               = as.date(WAGES$date, format(%M/%Y))
-WAGES               = ts(WAGES$value, start=c(1984,4), frequency = 4, names=c("WAGES"))
+GDP_PHW             = read_abs(series_id = "A2304424L")
+GDP_PHW             = GDP_PHW %>%slice(-c(1:101))
+GDP_PHW             = GDP_PHW[c(4,6)]
 
-RETAIL_SALES        = as.data.frame(read.csv("RetSal.csv",header=TRUE))
-RETAIL_SALES        = RETAIL_SALES %>%slice(-c(1:179))
-RETAIL_SALES_M      = ts(RETAIL_SALES$value, start=c(1984,12), frequency = 12, names=c("RETAIL_SALES_Q"))
-RETAIL_SALES_Q      = aggregate.ts(RETAIL_SALES_M, nfrequency = 4)
+NET_SAVINGS         = read_abs(series_id = "A2304424L")
+NET_SAVINGS         = NET_SAVINGS %>%slice(-c(1:101))
+NET_SAVINGS         = NET_SAVINGS[c(4,6)]
 
-BANKBILL_90D        = as.data.frame(read.csv("90_Day_Bank_Bills.csv",header=TRUE))
-BANKBILL_90D        = BANKBILL_90D %>% slice(-c(1:179))
-BANKBILL_90D_M      = ts(BANKBILL_90D$value, start=c(1984,12), frequency = 12, names=c("BANKBILL_90D"))
-BANKBILL_90D_M_Q    = aggregate.ts(BANKBILL_90D_M, nfrequency = 4)
+DOMESTIC_DEMAND     = read_abs(series_id = "A2304198A")
+DOMESTIC_DEMAND     = DOMESTIC_DEMAND %>%slice(-c(1:101))
+DOMESTIC_DEMAND     = DOMESTIC_DEMAND[c(4,6)]
 
-TOT                 = as.data.frame(read_abs(series_id = "A2304400V"))
+DISP_INC_PC         = read_abs(series_id = "A2304416L")
+DISP_INC_PC         = DISP_INC_PC %>% slice(-c(1:101))
+DISP_INC_PC         = DISP_INC_PC[c(4,6)]
+
+TOT                 = read_abs(series_id = "A2304400V")
 TOT                 = TOT %>% slice(-c(1:101))
-TOT                 = ts(TOT$value, start=c(1984,4), frequency = 4, names=c("TOT"))
+TOT                 = TOT[c(4,6)]
 
-Y1                  = inner_join(HOURS[c(4,6)], HHSAVINGS[c(4,6)], by = 'date')
-Y1.1                = inner_join(HOURS[c(4,6)], HHSAVINGS[c(4,6)], by = 'date')
+y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
+y_VEC2              = merge(RGDP, CPI, by = 'date')
+y_VEC3              = merge(GDP_PHW, NET_SAVINGS, by ='date')
+y_VEC4              = merge(DOMESTIC_DEMAND, DISP_INC_PC, by ='date')
+y_VEC5              = merge(TOT, VALUE_ADDED, by ='date')
 
-Y2                  = inner_join(RGDP[c(4,6)], CPI[c(4,6)], by = 'date')
-Y2.1                = inner_join(RGDP[c(4,6)], CPI[c(4,6)], by = 'date')
+y1                  = merge(y_VEC1, y_VEC2, by = 'date')
+y2                  = merge(y_VEC3, y_VEC4, by = 'date')
+y3                  = merge(y1, y2, by ='date')
 
-Y3 = inner_join(Y1, Y1.1, by = 'date')
-Y4 = inner_join(Y2, Y2.1, by = 'date')
+y                   = merge(y3, y_VEC5, by = 'date') 
+y                   = y %>% slice(-c(1:39))
+y                   = ts(y[,c(2:11)], start = c(1994,3), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
 
-Y5 = inner_join(Y3, Y4, by = 'date')
-
-Y  = inner_join(Y5, Y1, by = 'date')
-Y  = Y %>% slice(-c(1:8))
-Y  = ts(Y[c(2:11)], start=c(1986,4), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
-Y   = Y[,c(1:10)] # GETS RID OF TIME
-
-nrow(Y)
-Y_VEC  = ts(Y[(4+1):nrow(Y),], start=c(1988,4), frequency=4)
-X_VEC  = matrix(1,nrow(Y_VEC),1)
-
-p = 4
-for (i in 1:p){
-  X    = cbind(X, Y[(p+1):nrow(Y)-i,])
-}
-
-GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
-GerGNP              = matrix(GermanGNP)
-colnames(GerGNP)    = "German GNP"
-plot.ts(GermanGNP, lwd=3, col="purple", main="")
+Y                   = ts(y[(p+1):nrow(y),],start = c(1994,3), frequency = 4)
+X                   = matrix(1,nrow(Y),1)
+X                   = cbind(X,
+                            y[5:nrow(y)-1,],
+                            y[5:nrow(y)-2,],
+                            y[5:nrow(y)-3,],
+                            y[5:nrow(y)-4,]
+                            )
+          
+T = nrow(Y) 
+##GRAPHING CODE
+#GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
+#GerGNP              = matrix(GermanGNP)
+#colnames(GerGNP)    = "German GNP"
+#plot.ts(GermanGNP, lwd=3, col="purple", main="")
 
 
-# INPUTTING DATA 
-x                   = matrix (1, K, 1)
-X                   = matrix(1, T, K)
-Y                   = matrix(1, T, N)
 
 # SPECIFYING HYPER-PARAMETERS OF PRIOR DISTRIBUTION   
 S = c(100,1000)
@@ -106,19 +106,20 @@ colnames(posterior3) = c("Ka","Ke")
 hyper             = c(1,2,3,3,1,3,1)
 names(hyper)      = c("S_BAR(Ka)","V_BAR(KA)","ALPHA_BAR(Ke)","BETA_BAR(Ke)","A_uBAR","S_BAR", "V_BAR")
 
-T = 170             #=nrow(Y)
-K = 1+(4*N)         #=ncol(X)
+T = nrow(Y)
+K = ncol(X)
 N = 10
 
 # STARTING VALUES 
 aux_ka          = 2
 aux_ke          = 2
 aux_A           = matrix(0, K, N)
-aux_E           = diag(1, N)
 aux_E           = rep(NA,N)
 for (n in 1:N){
   aux_E[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
 }
+aux_E           = diag(aux_E)
+
 
 # POSTERIOR DRAWS
 posterior_A     = matrix(NA, S, K)
@@ -137,7 +138,8 @@ for (s in 1:S) {
   v_bar_ka        = hyper[2] + N*K
   
   # PARAMETERS OF MVNIW POSTERIOR
-  V_bar_inv       = as.numeric(crossprod(X) + solve(aux_ka*hyper[7]))
+  V_bar_inv       = crossprod(X) + 1/(aux_ka*hyper[7])
+  V_bar_inv_chol  = chol(V_bar_inv)
   V_bar           = as.numeric(solve(V_bar_inv))
   A_bar           = as.numeric(V_bar %*% (t(X)%*%Y) + solve(aux_ka*V_bar) %*% hyper[5])
   s_bar           = as.numeric(crossprod(Y) + aux_ke*hyper[6] + t(aux_A)*solve((aux_ka*hyper[7]))*aux_A + t(A_bar)%*%solve(V_bar)%*%A_bar )
