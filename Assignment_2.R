@@ -130,10 +130,10 @@ for (s in 1:S) {
   
   # SAMPLE Ke
   alpha_bar_ke    = hyper[3] - ((hyper[7]*K))/2
-  beta_barke      = hyper[4] + as.numeric(0.5*trace(solve(aux_E)*hyper[6]))  
+  beta_bar_ke      = hyper[4] + 0.5*sum(diag(solve(aux_E)*hyper[6]))
   
   # SAMPLE Ka
-  s_bar_ka        = as.numeric(trace(solve(aux_E)%*%t(aux_A-hyper[5])%*%(aux_A-hyper[5])) + hyper[1])
+  s_bar_ka        = as.numeric(sum(diag((solve(aux_E)%*%t(aux_A-hyper[5])%*%(aux_A-hyper[5])) + hyper[1])))
   v_bar_ka        = hyper[2] + N*K
   
   # PARAMETERS OF MVNIW POSTERIOR
