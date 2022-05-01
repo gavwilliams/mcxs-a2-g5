@@ -1,4 +1,3 @@
-# QUESTION 6
 # INSTALLING REQUIRED PACKAGES
 library(readrba)
 library(readabs)
@@ -9,7 +8,9 @@ library(lubridate)
 library(reticulate)
 library(mvtnorm)
 search(gsl)
-# DATA COLLECTION AND TRANSFORMING
+
+
+# EXERCISE 1 DATA COLLECTION AND TRANSFORMING
 ############################################################
 HOURS               = read_abs(series_id ="A2304428W")
 HOURS               = HOURS %>%slice(-c(1:101))
@@ -19,25 +20,21 @@ HHSAVINGS           = read_abs(series_id = "A2323382F")
 HHSAVINGS           = HHSAVINGS %>%slice(-c(1:101))
 HHSAVINGS           = HHSAVINGS[c(4,6)]
 
-RGDP                = read_abs(series_id = "A2304414J")
-RGDP                = RGDP %>%slice(-c(1:101))
-RGDP                = RGDP[c(4,6)]
+RGNI                = read_abs(series_id = "A2304412C")
+RGNI                = RGNI %>%slice(-c(1:101))
+RGNI                = RGNI[c(4,6)]
 
 CPI                 = read_abs(series_id = "A3604506F")
 CPI                 = CPI %>%slice(-c(1:145))
 CPI                 = CPI[c(4,6)]
 
-VACANCIES           = read_abs(series_id = "A590698F")
-VACANCIES           = VACANCIES %>%slice(-c(1:22))
-VACANCIES           = VACANCIES[c(4,6)]
+GDPPERCAP           = read_abs(series_id = "A2304372W")
+GDPPERCAP           = GDPPERCAP %>%slice(-c(1:101))
+GDPPERCAP           = GDPPERCAP[c(4,6)]
 
-VALUE_ADDED         = read_abs(series_id = "A3606058X")
-VALUE_ADDED         = VALUE_ADDED %>%slice(-c(1:101))
-VALUE_ADDED         = VALUE_ADDED[c(4,6)]
-
-GDP_PHW             = read_abs(series_id = "A2304424L")
-GDP_PHW             = GDP_PHW %>%slice(-c(1:101))
-GDP_PHW             = GDP_PHW[c(4,6)]
+GDP                 = read_abs(series_id = "A2304370T")
+GDP                 = GDP %>%slice(-c(1:101))
+GDP                 = GDP[c(4,6)]
 
 NET_SAVINGS         = read_abs(series_id = "A2304424L")
 NET_SAVINGS         = NET_SAVINGS %>%slice(-c(1:101))
@@ -69,10 +66,10 @@ T                   = TT - 1
 # Create Y and X
 ############################################################
 y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
-y_VEC2              = merge(RGDP, CPI, by = 'date')
-y_VEC3              = merge(GDP_PHW, NET_SAVINGS, by ='date')
+y_VEC2              = merge(log(RGNI), CPI, by = 'date')
+y_VEC3              = merge(log(GDP), NET_SAVINGS, by ='date')
 y_VEC4              = merge(DOMESTIC_DEMAND, DISP_INC_PC, by ='date')
-y_VEC5              = merge(TOT, VALUE_ADDED, by ='date')
+y_VEC5              = merge(TOT, GDPPERCAP, by ='date')
 
 y1                  = merge(y_VEC1, y_VEC2, by = 'date')
 y2                  = merge(y_VEC3, y_VEC4, by = 'date')
@@ -91,6 +88,9 @@ X                   = cbind(X,
                             y[5:nrow(y)-4,]
 )
 
+#Plot macro data and comment on trends
+plot(y)
+
 ##GRAPHING CODE
 #GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
 #GerGNP              = matrix(GermanGNP)
@@ -104,7 +104,7 @@ round(A_HAT,3)
 round(SIGMA_HAT,3)
 round(cov2cor(SIGMA_HAT),3)
 
-# PRIOR DISTRIBUTION COPIED FROM L10
+# PRIOR DISTRIBUTIONS SPECIFICATION
 ############################################################
 KAPPA_P_A             = 100
 KAPPA_P_E             = 0.02^2
@@ -195,6 +195,15 @@ plot.ts(SAMPLER_OUTPUT$Ke[1:100], main = "trace plots", xlab = "", ylab = "Ke")
 
 round(SAMPLER_OUTPUT$A[1,,], mean)
 mean(SAMPLER_OUTPUT$A[1,,],1:10)
+
+
+# report posterior means and sd of parameters
+A.E         = apply(A.posterior,1:2,mean)
+A.sd        = apply(A.posterior,1:2,sd)
+Sigma.E     = apply(Sigma.posterior,1:2,mean)
+Sigma.sd    = apply(Sigma.posterior,1:2,sd)
+
+
 # QUESTION 9 
 # SAMPLE -- PREDICTIVE DENSITY 
 h               = 4
