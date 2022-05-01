@@ -62,7 +62,6 @@ N                   = 10
 p                   = 4
 K                   = 1+p*N
 S                   = 1000
-h                   = #TBD
   
 TT                  = nrow(Y)
 T                   = TT - 1
