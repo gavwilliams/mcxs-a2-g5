@@ -7,6 +7,7 @@ library(dplyr)
 library(ggplot2)
 library(lubridate)
 library(reticulate)
+library(mvtnorm)
 search(gsl)
 # DATA COLLECTION AND TRANSFORMING
 ############################################################
@@ -60,7 +61,7 @@ TOT                 = TOT[c(4,6)]
 N                   = 10
 p                   = 4
 K                   = 1+p*N
-S                   = 50000
+S                   = 100
 h                   = #TBD
   
 TT                  = nrow(Y)
@@ -169,10 +170,10 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
           
     round(apply(A_POST,1:2, mean),3)
                           
-    posterior_ka[s] = KAPPA_P_A
-    posterior_ke[s] = KAPPA_P_E
-    posterior_A[s,,] = A_POST
-    posterior_E[,,s] = SIGMA_POST
+    posterior_ka[s]     = KAPPA_P_A
+    posterior_ke[s]     = KAPPA_P_E
+    posterior_A[s,,]    = A_POST
+    posterior_E[,,s]    = SIGMA_POST
   }
 
   # OUTPUT  
@@ -181,64 +182,46 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
       A           = posterior_A,
       E           = posterior_E,
       Ka          = posterior_ka,
-      Ke          = posterior_ke,
+      Ke          = posterior_ke
     )
   )
 }
 
 
+SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y , X, hyper)
+
 
 # QUESTION 9 
 # SAMPLE -- PREDICTIVE DENSITY 
-h               = 14
-L               = t(solve(Chol(V_bar_inv)))
-Y.h             = array(NA,c(h,N.S))
+h               = 1
+Y.h             = array(NA,c(h,2,S))
+Y.h.m           = array(NA,c(h,2))
 
 for (s in 1:S){
-  cat(s)
-  draw_ norm    = array(mvrnorm::rnorm(N*K),c(K,N))
-  posterior_E   = solve rWishart(1, df= nu_bar, Sigam=S_bar_inv)[,,1]
-  posterior_A   = A_bar + L %*%draw.norm%*%chol(posterior_E)
-  
-  if (p==1){
-    x.Ti          = matrix(Y[(nrow(Y)-p+1):nrow(Y),],nrow=1)
-    x.Ti.m        = x.Ti
-  } else {
-    x.Ti          = Y[(nrow(Y)-p+1):nrow(Y),]
-    x.Ti          = x.Ti[p:1,]
-    x.Ti.m        = x.Ti
-  }
-  
-  
-  for (i in 1:h){
-    x.T           = c(1,as.vector(t(x.Ti)))
-    x.T.m         = c(1,as.vector(t(x.Ti.m)))
-    Y.f           = rmvnorm(1, mean = x.T%*%posterior_A, sigma=posterior_E)
-    Y.f.m         = x.T.m%*%A.bar
     if (p==1){
-      x.Ti        = Y.f
-      x.Ti.m      = Y.f.m
+      x.Ti          = matrix(Y[(nrow(Y)-p+1):nrow(Y),],nrow=1)
+      x.Ti.m        = x.Ti
     } else {
-      x.Ti        = rbind(Y.f,x.Ti[1:(p-1),])
-      x.Ti.m      = rbind(Y.f.m,x.Ti.m[1:(p-1),])
+      x.Ti          = Y[(nrow(Y)-p+1):nrow(Y),]
+      x.Ti          = x.Ti[p:1,]
+      x.Ti.m        = x.Ti
     }
-    Y.h[i,,s]     = Y.f[1:2]
-    Y.h.m[i,]     = Y.f.m[1:2]
+    for (i in 1:h){
+      x.T           = c(1,as.vector(t(x.Ti)))
+      x.T.m         = c(1,as.vector(t(x.Ti.m)))
+      Y.f           = rmvnorm(1, mean = x.T%*%SAMPLER_OUTPUT$A[s,,], sigma=SAMPLER_OUTPUT$E[,,s])
+      Y.f.m         = x.T.m%*%A_POST
+      if (p==1){
+        x.Ti        = Y.f
+        x.Ti.m      = Y.f.m
+      } else {
+        x.Ti        = rbind(Y.f,x.Ti[1:(p-1),])
+        x.Ti.m      = rbind(Y.f.m,x.Ti.m[1:(p-1),])
+      }
+      Y.h[i,,s]     = Y.f[1:2]
+      Y.h.m[i,]     = Y.f.m[1:2]
+    }
   }
-}
-  
-  
-  
-  x.Ti          = Y[(nrow(Y)-h+1):nrow(Y),]
-  x.Ti          = x.Ti[4:1,]                  #MAY NEED TO CHANGE DIMENSIONS
-  for (i in 1:h){
-    x.T         = c(1,as.vector(t(x.Ti)))
-    Y.h[i,,s]   = rmvnorm(1,
-                          mean  = x.T%*%posterior_A[,,s],
-                          sigma = posterios_E[,,s])
-    x.Ti        = rbind(Y.h[i,,s], x.Ti[1:3,])
-  }
-}
 
 # 1 PERIOD AHEAD -- JOINT PREDICTIVE DENSITY
 limits.VAR1     = range(Y.h[1,1,])
