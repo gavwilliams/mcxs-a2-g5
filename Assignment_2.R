@@ -7,6 +7,7 @@ library(dplyr)
 library(ggplot2)
 library(lubridate)
 library(reticulate)
+search(gsl)
 # DATA COLLECTION AND TRANSFORMING
 ############################################################
 
@@ -97,43 +98,30 @@ X                   = cbind(X,
 #plot.ts(GermanGNP, lwd=3, col="purple", main="")
 
 ## MLE
-A_HAT                 = (1/(t(X)%*%X))%*%t(X)%*%Y
+A_HAT                 = (1/((t(X)%*%X)))%*%t(X)%*%Y
 SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)
 round(A_HAT,3)
 round(SIGMA_HAT,3)
 round(cov2cor(SIGMA_HAT),3)
 
-# SPECIFYING HYPER-PARAMETERS OF PRIOR DISTRIBUTION   
-S = c(100,1000)
-a0 = 2                      # TO BE CHANGED?
-e0 = 2                      # TO BE CHANGED?
-intial_kappa_a       = a0
-intial_kappa_e       = e0
-
-posterior1           = matrix(NA, sum(S), 1)
-posterior2           = matrix(NA, sum(S), 1)
-posterior3           = matrix(NA, sum(S), 2)
-colnames(posterior1) = c("A")
-colnames(posterior2) = c("E")
-colnames(posterior3) = c("Ka","Ke")
-
-
 # PRIOR DISTRIBUTION COPIED FROM L10
 ############################################################
-KAPPA_P_A             = 0.02^2
-KAPPA_P_E             = 100
+KAPPA_P_A             = 100
+KAPPA_P_E             = 0.02^2
 A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
 A_MEAN_PRI[2:11,]     = diag(10)
 V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
 V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
+
 S_PRIOR               = diag(diag(SIGMA_HAT)) 
 NU_PRIOR              = N+1
 
-A_PRIOR               = matrix(0, nrow(A_HAT),nrow(A_HAT))
+A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
 SIGMA_PRIOR           = diag(10)
+SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
 
 # SPECIFYING HYPER-PARAMETERS
-hyper                 = list(1,3,1,3,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
+hyper                 = list(1,1,1,1,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
 names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
 
 
@@ -147,38 +135,38 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
 
   for (s in 1:S){
     # HYPER-PARAMETER ESTIMATION -- K_E
-    alpha_bar_ke        = hyper$ALPHA_PRIOR_Ke - ((hyper$V_PRIOR*N))/2
-    beta_bar_ke         = hyper$BETA_PRIOR_Ke + 0.5*sum(diag(hyper$S_PRIOR%*%(solve(SIGMA_PRIOR))))
+    alpha_bar_ke        = hyper$ALPHA_PRIOR_Ke + ((hyper$V_PRIOR_KA*N))/2
+    beta_bar_ke         = solve(hyper$BETA_PRIOR_Ke) + 0.5*sum(diag(solve(SIGMA_PRIOR)%*%hyper$S_PRIOR))
   
     # SAMPLING -- K_E
-    KAPPA_P_E           = rgamma(1, shape = alpha_bar_ke, scale = 1/beta_bar_ke)
-    posterior_ke        = KAPPA_P_E
+    KAPPA_P_E           = rgamma(1, shape = alpha_bar_ke, scale = beta_bar_ke)
   
-  
+    help(rgamma)
     # HYPER-PARAMETER ESTIMATION -- K_A
-    s_bar_ka            = sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper$A_MEAN_PRI))%*%(A_PRIOR-hyper$A_MEAN_PRI)) + hyper$S_PRIOR_Ka
+    s_bar_ka            = sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper$A_MEAN_PRI))%*%(A_PRIOR-hyper$A_MEAN_PRI))) + hyper$S_PRIOR_Ka
     v_bar_ka            = hyper$V_PRIOR_KA + N*K
   
     # SAMPLING -- K_A
     KAPPA_P_A           = s_bar_ka/rchisq(1, v_bar_ka)
-    posterior_ka        = KAPPA_P_A
   
     # PARAMETERS OF MVNIW POSTERIOR
-    V_bar_inv           = crossprod(X) + V_PRIOR_INV*(1/KAPPA_P_A)
+    V_bar_inv           = crossprod(X) + solve(KAPPA_P_A*hyper$V_PRIOR)
     V_bar               = solve(V_bar_inv)
     A_bar               = V_bar%*%(t(X)%*%Y + solve(KAPPA_P_A*V_bar)%*%hyper$A_MEAN_PRI)
-    S_bar               = crossprod(Y) + KAPPA_P_E*hyper$S_PRIOR + t(hyper$A_MEAN_PRI)%*%solve((KAPPA_P_A*hyper$V_PRIOR))%*%hyper$A_MEAN_PRI - t(A_bar)%*%solve(V_bar)%*%A_bar
-    S_bar               = 0.5*(S_bar + t(S_bar))
-    S_bar_chol          = chol(S_bar)
-    S_bar_inv           = backsolve(S_bar_chol, forwardsolve(t(S_bar_chol), diag(N)))
-  
+    
+    S_bar               = crossprod(Y) + KAPPA_P_E*hyper$S_PRIOR + t(hyper$A_MEAN_PRI)%*%solve((KAPPA_P_A*hyper$V_PRIOR))%*%hyper$A_MEAN_PRI - t(A_bar)%*%V_bar_inv%*%A_bar
+    S_bar_inv           = solve(S_bar)
+    #S_bar              = 0.5*(S_bar + t(S_bar))
+    #S_bar_chol         = chol(S_bar)
+    #S_bar_inv          = backsolve(S_bar_chol, forwardsolve(t(S_bar_chol), diag(N)))
     nu_bar              = T + NU_PRIOR
-  
+
     # SAMPLE -- aux_A & aux_E
-    SIGMA_POST          = solve(rWishart(1, df = nu_bar, Sigma =S_bar)[,,1])
+    L                   = t(solve(chol(V_bar_inv)))
+    SIGMA_POST          = solve(rWishart(1, df = nu_bar, Sigma =S_bar_inv)[,,1])
     draw.norm           = array(rnorm(prod(N*K)),c(K,N))
     A_POST              = A_bar + L%*%draw.norm%*% chol(SIGMA_POST)
-                          
+          
     round(apply(A_POST,1:2, mean),3)
                           
     posterior_ka[s] = KAPPA_P_A
@@ -187,15 +175,15 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
     posterior_E[,,s] = SIGMA_POST
   }
 
-# OUTPUT  
-return(
-  list(
-    A           = posterior_A,
-    E           = posterior_E,
-    Ka          = posterior_ka,
-    Ke          = posterior_ke,
+  # OUTPUT  
+  return(
+    list(
+      A           = posterior_A,
+      E           = posterior_E,
+      Ka          = posterior_ka,
+      Ke          = posterior_ke,
+    )
   )
-)
 }
 
 
@@ -208,7 +196,7 @@ Y.h             = array(NA,c(h,N.S))
 
 for (s in 1:S){
   cat(s)
-  draw_ norm    = array(rnorm(N*K),c(K,N))
+  draw_ norm    = array(mvrnorm::rnorm(N*K),c(K,N))
   posterior_E   = solve rWishart(1, df= nu_bar, Sigam=S_bar_inv)[,,1]
   posterior_A   = A_bar + L %*%draw.norm%*%chol(posterior_E)
   
