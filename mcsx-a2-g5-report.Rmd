@@ -1,0 +1,80 @@
+---
+title: "mcxs-a2-g5 report"
+author: "Alex Rendell, Xinyu Dang, Gavin Williams"
+date: "29/04/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercise 1  
+
+In this section, we will (i) List and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations
+````{r}
+
+`````
+
+# Exercise 2
+In this section we document the likelihood function of the model, and the probability density function of A and \Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
+
+\newpage
+
+![](Exercise2.png)
+
+
+We also specify the parameters determining the prior distribution matrices \bar{A}, \bar{V}, \bar{S} and \bar{v}.
+
+
+
+# Exercise 3 - Joint conditional posterior distribuion
+
+\newpage
+
+![](Exercise3-1.png)
+
+![](Exercise3-2.png)
+
+![](Exercise3-3.png)
+
+# Exercise 4
+
+\newpage
+
+![](Exercise4.png)
+
+# Exercise 5
+
+\newpage
+
+![](Exercise5-1.png)
+
+![](Exercise5-2.png)
+
+![](Exercise5-3.png)
+
+![](Exercise5-4.png)
+
+![](Exercise5-5.png)
+
+
+# Exercise 6
+
+
+
+
+# Exercise 7
+
+
+
+
+
+
+# Exercise 8
+
+
+
+# Exercise 9 
