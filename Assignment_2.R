@@ -1,4 +1,3 @@
-# QUESTION 6
 # INSTALLING REQUIRED PACKAGES
 library(readrba)
 library(readabs)
@@ -8,7 +7,11 @@ library(ggplot2)
 library(lubridate)
 library(reticulate)
 search(gsl)
-# DATA COLLECTION AND TRANSFORMING
+
+rm(list=ls()) #remove current memory of the environment
+
+
+# EXERCISE 1 - DATA COLLECTION AND TRANSFORMING
 ############################################################
 
 HOURS               = read_abs(series_id ="A2304428W")
@@ -27,7 +30,7 @@ CPI                 = read_abs(series_id = "A3604506F")
 CPI                 = CPI %>%slice(-c(1:145))
 CPI                 = CPI[c(4,6)]
 
-VACANCIES           = read_abs(series_id = "A590698F")
+VACANCIES           = read_abs(series_id = "A590698F") #excluded from analysis
 VACANCIES           = VACANCIES %>%slice(-c(1:22))
 VACANCIES           = VACANCIES[c(4,6)]
 
@@ -60,7 +63,7 @@ TOT                 = TOT[c(4,6)]
 N                   = 10
 p                   = 4
 K                   = 1+p*N
-S                   = 50000
+S                   = 1000
 h                   = #TBD
   
 TT                  = nrow(Y)
@@ -89,7 +92,10 @@ X                   = cbind(X,
                             y[5:nrow(y)-2,],
                             y[5:nrow(y)-3,],
                             y[5:nrow(y)-4,]
-                            )
+
+                                                       )
+#plot times series data and comment on the plot
+plot(y)
           
 ##GRAPHING CODE
 #GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
@@ -104,7 +110,7 @@ round(A_HAT,3)
 round(SIGMA_HAT,3)
 round(cov2cor(SIGMA_HAT),3)
 
-# PRIOR DISTRIBUTION COPIED FROM L10
+# PRIOR DISTRIBUTION DEFINITION
 ############################################################
 KAPPA_P_A             = 100
 KAPPA_P_E             = 0.02^2
@@ -181,7 +187,7 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
       A           = posterior_A,
       E           = posterior_E,
       Ka          = posterior_ka,
-      Ke          = posterior_ke,
+      Ke          = posterior_ke
     )
   )
 }
