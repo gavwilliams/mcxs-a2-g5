@@ -23,6 +23,7 @@ HHSAVINGS           = HHSAVINGS[c(4,6)]
 RGNI                = read_abs(series_id = "A2304412C")
 RGNI                = RGNI %>%slice(-c(1:101))
 RGNI                = RGNI[c(4,6)]
+RGNI$value          = log(RGNI$value)
 
 CPI                 = read_abs(series_id = "A3604506F")
 CPI                 = CPI %>%slice(-c(1:145))
@@ -32,9 +33,11 @@ GDPPERCAP           = read_abs(series_id = "A2304372W")
 GDPPERCAP           = GDPPERCAP %>%slice(-c(1:101))
 GDPPERCAP           = GDPPERCAP[c(4,6)]
 
-GDP                 = read_abs(series_id = "A2304370T")
+GDP                 = read_abs(series_id = "A2304402X")
 GDP                 = GDP %>%slice(-c(1:101))
 GDP                 = GDP[c(4,6)]
+GDP$value           = log(GDP$value)
+
 
 NET_SAVINGS         = read_abs(series_id = "A2304424L")
 NET_SAVINGS         = NET_SAVINGS %>%slice(-c(1:101))
@@ -57,7 +60,7 @@ TOT                 = TOT[c(4,6)]
 N                   = 10
 p                   = 4
 K                   = 1+p*N
-S                   = 11000
+S                   = 1000
 h                   = #TBD
   
 TT                  = nrow(Y)
@@ -66,8 +69,8 @@ T                   = TT - 1
 # Create Y and X
 ############################################################
 y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
-y_VEC2              = merge(log(RGNI), CPI, by = 'date')
-y_VEC3              = merge(log(GDP), NET_SAVINGS, by ='date')
+y_VEC2              = merge(RGNI, CPI, by = 'date')
+y_VEC3              = merge(GDP, NET_SAVINGS, by ='date')
 y_VEC4              = merge(DOMESTIC_DEMAND, DISP_INC_PC, by ='date')
 y_VEC5              = merge(TOT, GDPPERCAP, by ='date')
 
@@ -76,10 +79,10 @@ y2                  = merge(y_VEC3, y_VEC4, by = 'date')
 y3                  = merge(y1, y2, by ='date')
 
 y                   = merge(y3, y_VEC5, by = 'date') 
-y                   = y %>% slice(-c(1:39))
-y                   = ts(y[,c(2:11)], start = c(1994,3), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
+y                   = y %>% slice(-c(1:8))
+y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
 
-Y                   = ts(y[(p+1):nrow(y),],start = c(1994,3), frequency = 4)
+Y                   = ts(y[(p+1):nrow(y),],start = c(1986,4), frequency = 4)
 X                   = matrix(1,nrow(Y),1)
 X                   = cbind(X,
                             y[5:nrow(y)-1,],
@@ -188,10 +191,10 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
 
 
 SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y , X, hyper)
-plot.ts(SAMPLER_OUTPUT$A[1:100], main = "trace plots", xlab = "", ylab = "A")
-plot.ts(SAMPLER_OUTPUT$E[1:100], main = "trace plots", xlab = "", ylab = "E")
-plot.ts(SAMPLER_OUTPUT$Ka[1:100], main = "trace plots", xlab = "", ylab = "Ka")
-plot.ts(SAMPLER_OUTPUT$Ke[1:100], main = "trace plots", xlab = "", ylab = "Ke")
+plot.ts(SAMPLER_OUTPUT$A[1:S], main = "trace plots", xlab = "", ylab = "A")
+plot.ts(SAMPLER_OUTPUT$E[1:S], main = "trace plots", xlab = "", ylab = "E")
+plot.ts(SAMPLER_OUTPUT$Ka[1:S], main = "trace plots", xlab = "", ylab = "Ka")
+plot.ts(SAMPLER_OUTPUT$Ke[1:S], main = "trace plots", xlab = "", ylab = "Ke")
 
 round(SAMPLER_OUTPUT$A[1,,], mean)
 mean(SAMPLER_OUTPUT$A[1,,],1:10)
