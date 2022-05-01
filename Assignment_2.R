@@ -61,7 +61,7 @@ TOT                 = TOT[c(4,6)]
 N                   = 10
 p                   = 4
 K                   = 1+p*N
-S                   = 1000
+S                   = 11000
   
 TT                  = nrow(Y)
 T                   = TT - 1
@@ -80,7 +80,7 @@ y3                  = merge(y1, y2, by ='date')
 
 y                   = merge(y3, y_VEC5, by = 'date') 
 y                   = y %>% slice(-c(1:8))
-y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
+y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c("Hours","Household_Savings","Real_Gross_National_Income","CPI","Gross_Domestic_Product","Net_Savings","Domestic_Demand","Diposable_Income","Terms_of_Trade","GDP_Per_Capita"))
 
 Y                   = ts(y[(p+1):nrow(y),],start = c(1986,4), frequency = 4)
 X                   = matrix(1,nrow(Y),1)
