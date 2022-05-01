@@ -11,7 +11,6 @@ library(mvtnorm)
 search(gsl)
 # DATA COLLECTION AND TRANSFORMING
 ############################################################
-
 HOURS               = read_abs(series_id ="A2304428W")
 HOURS               = HOURS %>%slice(-c(1:101))
 HOURS               = HOURS[c(4,6)]
@@ -61,10 +60,10 @@ TOT                 = TOT[c(4,6)]
 N                   = 10
 p                   = 4
 K                   = 1+p*N
-S                   = 100
+S                   = 11000
 h                   = #TBD
   
-  TT                  = nrow(Y)
+TT                  = nrow(Y)
 T                   = TT - 1
 
 # Create Y and X
@@ -189,41 +188,57 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
 
 
 SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y , X, hyper)
+plot.ts(SAMPLER_OUTPUT$A[1:100], main = "trace plots", xlab = "", ylab = "A")
+plot.ts(SAMPLER_OUTPUT$E[1:100], main = "trace plots", xlab = "", ylab = "E")
+plot.ts(SAMPLER_OUTPUT$Ka[1:100], main = "trace plots", xlab = "", ylab = "Ka")
+plot.ts(SAMPLER_OUTPUT$Ke[1:100], main = "trace plots", xlab = "", ylab = "Ke")
 
-
+round(SAMPLER_OUTPUT$A[1,,], mean)
+mean(SAMPLER_OUTPUT$A[1,,],1:10)
 # QUESTION 9 
 # SAMPLE -- PREDICTIVE DENSITY 
-h               = 1
-Y.h             = array(NA,c(h,2,S))
-Y.h.m           = array(NA,c(h,2))
+h               = 4
+Y.h             = array(NA,c(h,10,S))
+Y.h.m           = array(NA,c(h,10))
 
-for (s in 1:S){
-  if (p==1){
-    x.Ti          = matrix(Y[(nrow(Y)-p+1):nrow(Y),],nrow=1)
-    x.Ti.m        = x.Ti
-  } else {
-    x.Ti          = Y[(nrow(Y)-p+1):nrow(Y),]
-    x.Ti          = x.Ti[p:1,]
-    x.Ti.m        = x.Ti
-  }
-  for (i in 1:h){
-    x.T           = c(1,as.vector(t(x.Ti)))
-    x.T.m         = c(1,as.vector(t(x.Ti.m)))
-    Y.f           = rmvnorm(1, mean = x.T%*%SAMPLER_OUTPUT$A[s,,], sigma=SAMPLER_OUTPUT$E[,,s])
-    Y.f.m         = x.T.m%*%A_POST
+
+FORECAST_FUNCTION = function(h,SAMPLER_OUTPUT){
+  for (s in 1:S){
     if (p==1){
-      x.Ti        = Y.f
-      x.Ti.m      = Y.f.m
+      x.Ti          = matrix(Y[(nrow(Y)-p+1):nrow(Y),],nrow=1)
+      x.Ti.m        = x.Ti
     } else {
-      x.Ti        = rbind(Y.f,x.Ti[1:(p-1),])
-      x.Ti.m      = rbind(Y.f.m,x.Ti.m[1:(p-1),])
+      x.Ti          = Y[(nrow(Y)-p+1):nrow(Y),]
+      x.Ti          = x.Ti[p:1,]
+      x.Ti.m        = x.Ti
     }
-    Y.h[i,,s]     = Y.f[1:2]
-    Y.h.m[i,]     = Y.f.m[1:2]
+    for (i in 1:h){
+      x.T           = c(1,as.vector(t(x.Ti)))
+      x.T.m         = c(1,as.vector(t(x.Ti.m)))
+      Y.f           = rmvnorm(1, mean = x.T%*%SAMPLER_OUTPUT$A[s,,], sigma=SAMPLER_OUTPUT$E[,,s])
+      Y.f.m         = x.T.m%*%A_POST
+      if (p==1){
+        x.Ti        = Y.f
+        x.Ti.m      = Y.f.m
+      } else {
+        x.Ti        = rbind(Y.f,x.Ti[1:(p-1),])
+        x.Ti.m      = rbind(Y.f.m,x.Ti.m[1:(p-1),])
+      }
+      Y.h[i,,s]     = Y.f[1:2]
+      Y.h.m[i,]     = Y.f.m[1:2]
+    }
   }
+  
+  # OUTPUT  
+  return(
+    list(
+      Y_FORECAST    = Y.h,
+      Y_M_FORECAST  = Y.h.m
+    )
+  )
 }
 
-# 1 PERIOD AHEAD -- JOINT PREDICTIVE DENSITY
-limits.VAR1     = range(Y.h[1,1,])
-bands           = 100
+FORECAST = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
 
+# QUESTION 10 
+# SAMPLE -- PREDICTIVE DENSITY FUNCTION
