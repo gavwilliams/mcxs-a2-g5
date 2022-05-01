@@ -122,89 +122,78 @@ colnames(posterior3) = c("Ka","Ke")
 ############################################################
 KAPPA_P_A             = 0.02^2
 KAPPA_P_E             = 100
-A_MEAN_PRI            = matrix(0, nrow(A_HAT),nrow(A_HAT))
-A_MEAN_PRI[2:11,2:11] = diag(10)
-V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%rep(1,N)))   # COL SPECIFIC VAR
-V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%rep(1,N))) 
+A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
+A_MEAN_PRI[2:11,]     = diag(10)
+V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
+V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
 S_PRIOR               = diag(diag(SIGMA_HAT)) 
 NU_PRIOR              = N+1
 
 A_PRIOR               = matrix(0, nrow(A_HAT),nrow(A_HAT))
-SIGMA_PRIOR           = diag(41)
+SIGMA_PRIOR           = diag(10)
 
 # SPECIFYING HYPER-PARAMETERS
-hyper                 = c(1,3,1,3,A_MEAN_PRI,S_PRIOR,V_PRIOR)
-names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke_","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
+hyper                 = list(1,3,1,3,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
+names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
 
 
 # POSTERIOR DRAWS
-posterior_A           = matrix(NA, S, K)
-posterior_E           = matrix(NA, S, K)
+posterior_A           = array(NA, c(S, K, N))
+posterior_E           = array(NA, c(N, N, S))
 posterior_ka          = matrix(NA, S)
 posterior_ke          = matrix(NA, S)
 
-for (s in 1:S) {
-  
-  # HYPER-PARAMETER ESTIMATION -- K_E
-  alpha_bar_ke    = hyper[3] - ((hyper[7]*N))/2
-  beta_bar_ke     = hyper[4] + 0.5*sum(diag(solve(SIGMA_PRIOR)*hyper[6]))
-  
-  # SAMPLING -- K_E
-  KAPPA_P_E       = rgamma(1, shape = alpha_bar_ke, scale = 1/beta_bar_ke)
-  posterior_ke    = KAPPA_P_E
-  
-  
-  # HYPER-PARAMETER ESTIMATION -- K_A
-  s_bar_ka        = as.numeric(sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper[5])%*%(A_PRIOR-hyper[5])) + hyper[1])))
-  v_bar_ka        = hyper[2] + N*K
-  
-  # SAMPLING -- K_A
-  KAPPA_P_A       = s_bar_ka/rchisq(1, v_bar_ka)
-  posterior_ka    = KAPPA_P_A
-  
-  # PARAMETERS OF MVNIW POSTERIOR
-  V_bar_inv       = crossprod(X) + V_PRIOR_INV*(1/KAPPA_P_A)
-  V_bar           = solve(V_bar_inv)
-  
-  #WORKING
-  #V_bar_inv       = crossprod(X) + V_PRIOR_INV*(1/KAPPA_P_A)
-  #V_bar_inv_chol  = chol(V_bar_inv)
-  #A_bar_temp      = t(X)%*%Y + diag(1/diag(V_PRIOR*KAPPA_P_A))*hyper[5]
+GIBBS_SAMPLER = function(S, Y, X , hyper){
 
-  A_bar           = V_bar%*% ( t(X)%*%Y + diag(1/diag(V_PRIOR*KAPPA_P_A))*hyper[5])
-  s_bar           = crossprod(Y) + KAPPA_P_E*hyper[6] + t(hyper[5])*solve((KAPPA_P_A*hyper[7]))*hyper[5] + t(A_bar)%*%solve(V_bar)%*%A_bar )
-  nu_bar          = T + NU_PRIOR
+  for (s in 1:S){
+    # HYPER-PARAMETER ESTIMATION -- K_E
+    alpha_bar_ke        = hyper$ALPHA_PRIOR_Ke - ((hyper$V_PRIOR*N))/2
+    beta_bar_ke         = hyper$BETA_PRIOR_Ke + 0.5*sum(diag(hyper$S_PRIOR%*%(solve(SIGMA_PRIOR))))
   
-xxx = V_bar_inv
-ncol(xxx)
-nrow(xxx)
-  # SAMPLE -- aux_A & aux_E
-  aux_E           = rWishart(S, df = V_bar, Sigma = s_bar)
-  aux_E           = apply(aux_E, 3, solve)
-  aux_E           = array(aux_E, c(N,N,S))
+    # SAMPLING -- K_E
+    KAPPA_P_E           = rgamma(1, shape = alpha_bar_ke, scale = 1/beta_bar_ke)
+    posterior_ke        = KAPPA_P_E
   
-  aux_A           = array(rnorm(prod(c(dim(A_bar),S))), c(dim(A_bar), S)
-                          L           = t(chol(V_bar))
+  
+    # HYPER-PARAMETER ESTIMATION -- K_A
+    s_bar_ka            = sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper$A_MEAN_PRI))%*%(A_PRIOR-hyper$A_MEAN_PRI)) + hyper$S_PRIOR_Ka
+    v_bar_ka            = hyper$V_PRIOR_KA + N*K
+  
+    # SAMPLING -- K_A
+    KAPPA_P_A           = s_bar_ka/rchisq(1, v_bar_ka)
+    posterior_ka        = KAPPA_P_A
+  
+    # PARAMETERS OF MVNIW POSTERIOR
+    V_bar_inv           = crossprod(X) + V_PRIOR_INV*(1/KAPPA_P_A)
+    V_bar               = solve(V_bar_inv)
+    A_bar               = V_bar%*%(t(X)%*%Y + solve(KAPPA_P_A*V_bar)%*%hyper$A_MEAN_PRI)
+    S_bar               = crossprod(Y) + KAPPA_P_E*hyper$S_PRIOR + t(hyper$A_MEAN_PRI)%*%solve((KAPPA_P_A*hyper$V_PRIOR))%*%hyper$A_MEAN_PRI - t(A_bar)%*%solve(V_bar)%*%A_bar
+    S_bar               = 0.5*(S_bar + t(S_bar))
+    S_bar_chol          = chol(S_bar)
+    S_bar_inv           = backsolve(S_bar_chol, forwardsolve(t(S_bar_chol), diag(N)))
+  
+    nu_bar              = T + NU_PRIOR
+  
+    # SAMPLE -- aux_A & aux_E
+    SIGMA_POST          = solve(rWishart(1, df = nu_bar, Sigma =S_bar)[,,1])
+    draw.norm           = array(rnorm(prod(N*K)),c(K,N))
+    A_POST              = A_bar + L%*%draw.norm%*% chol(SIGMA_POST)
                           
-                          for (s in 1:S){
-                            aux_A[,,s]    = A_bar + L %*%aux_A[,,s]%*%chol(aux_E[,,s])
-                          }
+    round(apply(A_POST,1:2, mean),3)
                           
-                          round(apply(aux_A,1:2,mean),3)
-                          
-                          posterior_ka[s] = aux_ka
-                          posterior_ke[s] = aux_ke
-                          posterior_A[s,] = aux_A
-                          posterior_E[s,] = aux_E
-}
+    posterior_ka[s] = KAPPA_P_A
+    posterior_ke[s] = KAPPA_P_E
+    posterior_A[s,,] = A_POST
+    posterior_E[,,s] = SIGMA_POST
+  }
 
 # OUTPUT  
 return(
   list(
-    A           = posterior_A
-    E           = posterior_E
-    Ka          = posterior_ka
-    Ke          = posterior_ke
+    A           = posterior_A,
+    E           = posterior_E,
+    Ka          = posterior_ka,
+    Ke          = posterior_ke,
   )
 )
 }
@@ -213,10 +202,45 @@ return(
 
 # QUESTION 9 
 # SAMPLE -- PREDICTIVE DENSITY 
-h               = 100
+h               = 14
+L               = t(solve(Chol(V_bar_inv)))
 Y.h             = array(NA,c(h,N.S))
 
 for (s in 1:S){
+  cat(s)
+  draw_ norm    = array(rnorm(N*K),c(K,N))
+  posterior_E   = solve rWishart(1, df= nu_bar, Sigam=S_bar_inv)[,,1]
+  posterior_A   = A_bar + L %*%draw.norm%*%chol(posterior_E)
+  
+  if (p==1){
+    x.Ti          = matrix(Y[(nrow(Y)-p+1):nrow(Y),],nrow=1)
+    x.Ti.m        = x.Ti
+  } else {
+    x.Ti          = Y[(nrow(Y)-p+1):nrow(Y),]
+    x.Ti          = x.Ti[p:1,]
+    x.Ti.m        = x.Ti
+  }
+  
+  
+  for (i in 1:h){
+    x.T           = c(1,as.vector(t(x.Ti)))
+    x.T.m         = c(1,as.vector(t(x.Ti.m)))
+    Y.f           = rmvnorm(1, mean = x.T%*%posterior_A, sigma=posterior_E)
+    Y.f.m         = x.T.m%*%A.bar
+    if (p==1){
+      x.Ti        = Y.f
+      x.Ti.m      = Y.f.m
+    } else {
+      x.Ti        = rbind(Y.f,x.Ti[1:(p-1),])
+      x.Ti.m      = rbind(Y.f.m,x.Ti.m[1:(p-1),])
+    }
+    Y.h[i,,s]     = Y.f[1:2]
+    Y.h.m[i,]     = Y.f.m[1:2]
+  }
+}
+  
+  
+  
   x.Ti          = Y[(nrow(Y)-h+1):nrow(Y),]
   x.Ti          = x.Ti[4:1,]                  #MAY NEED TO CHANGE DIMENSIONS
   for (i in 1:h){
