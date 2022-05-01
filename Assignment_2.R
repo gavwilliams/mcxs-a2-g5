@@ -8,6 +8,7 @@ library(lubridate)
 library(reticulate)
 library(mvtnorm)
 search(gsl)
+set.seed(123456)
 
 
 # EXERCISE 1 DATA COLLECTION AND TRANSFORMING
@@ -102,7 +103,7 @@ plot(y)
 
 ## MLE
 A_HAT                 = (1/((t(X)%*%X)))%*%t(X)%*%Y
-SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)
+SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)/T
 round(A_HAT,3)
 round(SIGMA_HAT,3)
 round(cov2cor(SIGMA_HAT),3)
