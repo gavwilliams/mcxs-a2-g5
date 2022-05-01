@@ -18,13 +18,12 @@ In this section, we will (i) List and justify the selection of nine macroeconomi
 
 # Exercise 2
 In this section we document the likelihood function of the model, and the probability density function of A and \Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
+
 \newpage
 
 **Exercise 2.**
 
-![] (Exercise 2.png)
-
-
+![](Exercise2.png)
 
 
 We also specify the parameters determining the prior distribution matrices \bar{A}, \bar{V}, \bar{S} and \bar{v}.
@@ -33,18 +32,26 @@ We also specify the parameters determining the prior distribution matrices \bar{
 
 # Exercise 3 - Joint conditional posterior distribuion
 
+\newpage
 
+**Exercise 3.**
 
+![](Exercise3-1.png)
 
+![](Exercise3-2.png)
+
+![](Exercise3-3.png)
 
 # Exercise 4
 
+\newpage
 
+**Exercise 4.**
 
-
-
+![](Exercise4.png)
 
 # Exercise 5
+
 
 
 
