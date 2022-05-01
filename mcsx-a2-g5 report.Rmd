@@ -18,7 +18,11 @@ In this section, we will (i) List and justify the selection of nine macroeconomi
 
 # Exercise 2
 In this section we document the likelihood function of the model, and the probability density function of A and \Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
+\newpage
 
+**Exercise 2.**
+
+![] (Exercise 2.png)
 
 
 
