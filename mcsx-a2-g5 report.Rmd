@@ -2,7 +2,9 @@
 title: "mcxs-a2-g5 report"
 author: "Alex Rendell, Xinyu Dang, Gavin Williams"
 date: "29/04/2022"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -52,8 +54,15 @@ We also specify the parameters determining the prior distribution matrices \bar{
 
 # Exercise 5
 
+\newpage
 
+**Exercise 5.**
 
+![](Exercise5-1.png)
+![](Exercise5-2.png)
+![](Exercise5-3.png)
+![](Exercise5-4.png)
+![](Exercise5-5.png)
 
 
 # Exercise 6
