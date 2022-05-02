@@ -18,10 +18,101 @@ Prepared by Alex Rendell, Gavin Williams, Xinyu Dang
 
 ###Exercise 1 
 
-In this section, we  (i) list and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations
+In this section, we (i) list and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations.
+
+**Selections**
+
 
 ``` {r}
+# INSTALLING REQUIRED PACKAGES
+library(readrba)
+library(readabs)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(reticulate)
+library(mvtnorm)
+library(HDInterval)
+set.seed(123456)
+
+# DATA COLLECTION AND TRANSFORMING
+############################################################
+##VAR1
+HOURS               = read_abs(series_id ="A2304428W")
+HOURS               = HOURS %>%slice(-c(1:101))
+HOURS               = HOURS[c(4,6)]
+
+##VAR2
+HHSAVINGS           = read_abs(series_id = "A2323382F")
+HHSAVINGS           = HHSAVINGS %>%slice(-c(1:101))
+HHSAVINGS           = HHSAVINGS[c(4,6)]
+
+##VAR3
+EMPLOYMENT          = read_abs(series_id = "A2454521V")
+EMPLOYMENT          = EMPLOYMENT %>%slice(-c(1:109))
+EMPLOYMENT          = EMPLOYMENT[c(4,6)]
+
+##VAR4
+CPI_CHANGE_Q        = read_abs(series_id = "A2325850V")
+CPI_CHANGE_Q        = CPI_CHANGE_Q %>%slice(-c(1:153))
+CPI_CHANGE_Q        = CPI_CHANGE_Q[c(4,6)]
+
+##VAR5
+REAL_LABOUR_COST    = read_abs(series_id = "A2433071F")
+REAL_LABOUR_COST    = REAL_LABOUR_COST %>%slice(-c(1:5))
+REAL_LABOUR_COST    = REAL_LABOUR_COST[c(4,6)]
+
+##VAR6
+GDP_PCT_CHANGE      = read_abs(series_id = "A2304370T")
+GDP_PCT_CHANGE      = GDP_PCT_CHANGE %>%slice(-c(1:101))
+GDP_PCT_CHANGE      = GDP_PCT_CHANGE[c(4,6)]
+
+##VAR7
+PUBLIC_CAPITAL      = read_abs(series_id = "A2454459T")
+PUBLIC_CAPITAL      = PUBLIC_CAPITAL %>%slice(-c(1:109))
+PUBLIC_CAPITAL      = PUBLIC_CAPITAL[c(4,6)]
+
+##VAR8
+INVENTORIES         = read_abs(series_id = "A3538852F")
+INVENTORIES         = INVENTORIES %>%slice(-c(1:5))
+INVENTORIES         = INVENTORIES[c(4,6)]
+
+##VAR9
+DISP_INC_PC         = read_abs(series_id = "A2304416L")
+DISP_INC_PC         = DISP_INC_PC %>% slice(-c(1:101))
+DISP_INC_PC         = DISP_INC_PC[c(4,6)]
+
+##VAR10
+TOT                 = read_abs(series_id = "A2304400V")
+TOT                 = TOT %>% slice(-c(1:101))
+TOT                 = TOT[c(4,6)]
+
+# Create Y and X
+############################################################
+y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
+y_VEC2              = merge(EMPLOYMENT, CPI_CHANGE_Q, by = 'date')
+y_VEC3              = merge(REAL_LABOUR_COST, GDP_PCT_CHANGE, by ='date')
+y_VEC4              = merge(PUBLIC_CAPITAL, INVENTORIES, by ='date')
+y_VEC5              = merge(DISP_INC_PC, TOT, by ='date')
+
+y1                  = merge(y_VEC1, y_VEC2, by = 'date')
+y2                  = merge(y_VEC3, y_VEC4, by = 'date')
+y3                  = merge(y1, y2, by ='date')
+
+y                   = merge(y3, y_VEC5, by = 'date') 
+y                   = y %>% slice(-c(1:8))
+y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c("Hours Worked","Household_Savings","Employment",
+                                                                                "CPI Change","Real Labour Costs",
+                                                                                "GDP % Change","Public Capital","Inventories",
+                                                                                "Disposable Income","Terms of Trade"))
+#Plot macro data and comment on trends
+plot(y)
+
 ```
+**Observations**
+
+
 
 \newpage
 
@@ -62,63 +153,12 @@ We also specify the parameters determining the prior distribution matrices \bar{
 <<<<<<< Updated upstream
 ![](Exercise5-4.png) 
 ![](Exercise5-5.png)
-
+\newpage
 # Exercise 6
+In this section we explain our Gibbs Sampler and the use of the full conditional posterior distributions.
+
+# Exercise 7
 ```{r}
-library(readrba)
-library(readabs)
-library(tidyr)
-library(dplyr)
-library(ggplot2)
-library(lubridate)
-
-# DATA COLLECTION AND TRANSFORMING
-############################################################
-
-HOURS               = read_abs(series_id ="A2304428W")
-HOURS               = HOURS %>%slice(-c(1:101))
-HOURS               = HOURS[c(4,6)]
-
-HHSAVINGS           = read_abs(series_id = "A2323382F")
-HHSAVINGS           = HHSAVINGS %>%slice(-c(1:101))
-HHSAVINGS           = HHSAVINGS[c(4,6)]
-
-RGDP                = read_abs(series_id = "A2304414J")
-RGDP                = RGDP %>%slice(-c(1:101))
-RGDP                = RGDP[c(4,6)]
-
-CPI                 = read_abs(series_id = "A3604506F")
-CPI                 = CPI %>%slice(-c(1:145))
-CPI                 = CPI[c(4,6)]
-
-VACANCIES           = read_abs(series_id = "A590698F")
-VACANCIES           = VACANCIES %>%slice(-c(1:22))
-VACANCIES           = VACANCIES[c(4,6)]
-
-VALUE_ADDED         = read_abs(series_id = "A3606058X")
-VALUE_ADDED         = VALUE_ADDED %>%slice(-c(1:101))
-VALUE_ADDED         = VALUE_ADDED[c(4,6)]
-
-GDP_PHW             = read_abs(series_id = "A2304424L")
-GDP_PHW             = GDP_PHW %>%slice(-c(1:101))
-GDP_PHW             = GDP_PHW[c(4,6)]
-
-NET_SAVINGS         = read_abs(series_id = "A2304424L")
-NET_SAVINGS         = NET_SAVINGS %>%slice(-c(1:101))
-NET_SAVINGS         = NET_SAVINGS[c(4,6)]
-
-DOMESTIC_DEMAND     = read_abs(series_id = "A2304198A")
-DOMESTIC_DEMAND     = DOMESTIC_DEMAND %>%slice(-c(1:101))
-DOMESTIC_DEMAND     = DOMESTIC_DEMAND[c(4,6)]
-
-DISP_INC_PC         = read_abs(series_id = "A2304416L")
-DISP_INC_PC         = DISP_INC_PC %>% slice(-c(1:101))
-DISP_INC_PC         = DISP_INC_PC[c(4,6)]
-
-TOT                 = read_abs(series_id = "A2304400V")
-TOT                 = TOT %>% slice(-c(1:101))
-TOT                 = TOT[c(4,6)]
-
 # setup
 ############################################################
 N                   = 10
@@ -132,20 +172,6 @@ T                   = TT - 1
 
 # Create Y and X
 ############################################################
-y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
-y_VEC2              = merge(RGDP, CPI, by = 'date')
-y_VEC3              = merge(GDP_PHW, NET_SAVINGS, by ='date')
-y_VEC4              = merge(DOMESTIC_DEMAND, DISP_INC_PC, by ='date')
-y_VEC5              = merge(TOT, VALUE_ADDED, by ='date')
-
-y1                  = merge(y_VEC1, y_VEC2, by = 'date')
-y2                  = merge(y_VEC3, y_VEC4, by = 'date')
-y3                  = merge(y1, y2, by ='date')
-
-y                   = merge(y3, y_VEC5, by = 'date') 
-y                   = y %>% slice(-c(1:39))
-y                   = ts(y[,c(2:11)], start = c(1994,3), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
-
 Y                   = ts(y[(p+1):nrow(y),],start = c(1994,3), frequency = 4)
 X                   = matrix(1,nrow(Y),1)
 X                   = cbind(X,
@@ -154,12 +180,7 @@ X                   = cbind(X,
                             y[5:nrow(y)-3,],
                             y[5:nrow(y)-4,]
                             )
-          
-##GRAPHING CODE
-#GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
-#GerGNP              = matrix(GermanGNP)
-#colnames(GerGNP)    = "German GNP"
-#plot.ts(GermanGNP, lwd=3, col="purple", main="")
+    
 
 ## MLE
 A_HAT                 = (1/((t(X)%*%X)))%*%t(X)%*%Y
