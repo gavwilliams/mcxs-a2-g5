@@ -171,6 +171,7 @@ We also specify the parameters determining the prior distribution matrices
 ## **Exercise 6 - Gibbs Sampler approach**
 In this section we explain our Gibbs Sampler and the use of the full conditional posterior distributions.
 
+![](Exercise6-1.png)
 
 \newpage
 ### **Exercise 7 - Gibbs Sample R Function**
