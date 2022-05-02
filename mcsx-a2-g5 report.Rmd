@@ -132,46 +132,44 @@ For many variables, we see an upward trend over time which follows Hours Worked 
 
 In this section we document the likelihood function of the model, and the probability density function of A and Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
 
-![](Exercise2.png)
+![](exercise2.1.png)
 
 We also specify the parameters determining the prior distribution matrices
 
-![](Exercise2-2.png)
+![](exercise2.2.png)
 
 \newpage
 
 ## **Exercise 3 - Joint conditional posterior distribution**
 
-![](Exercise3-1.png)
+![](exercise3.1.png)
 
-![](Exercise3-2.png)
-
-![](Exercise3-3.png)
+![](exercise3.2.png)
 
 \newpage
 
 ## **Exercise 4**
 
-![](Exercise4.png)
+![](exercise4.1.png)
 
 \newpage
 
 ## **Exercise 5**
 
-![](Exercise5-1.png) 
+![](exercise5.1.png) 
 
-![](Exercise5-2.png) 
+![](exercise5.2.png) 
 
-![](Exercise5-3.png) 
+![](exercise5.3.png) 
 
 <<<<<<< Updated upstream
-![](Exercise5-4.png) 
-![](Exercise5-5.png)
+![](exercise5.4.png) 
+
 \newpage
 ## **Exercise 6 - Gibbs Sampler approach**
 In this section we explain our Gibbs Sampler and the use of the full conditional posterior distributions.
 
-![](Exercise6-1.png)
+![](exercise6.1.png)
 
 \newpage
 ### **Exercise 7 - Gibbs Sample R Function**
