@@ -11,11 +11,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### Exercise 1 
+### **Exercise 1** 
 
 In this section, we (i) list and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations.
 
-**Selections**
+**Selections**\\
 To forecast Hours worked (Index), we selected:
 - Household Savings Ratio (Proportion)
 - Total Unemployed persons (000s); 
@@ -113,10 +113,11 @@ y3                  = merge(y1, y2, by ='date')
 
 y                   = merge(y3, y_VEC5, by = 'date') 
 y                   = y %>% slice(-c(1:8))
-y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c("Hours Worked","Household_Savings","Unemployment",
-                                                                                "CPI Change","Real Labour Costs",
-                                                                                "GDP % Change","Public Capital","Inventories",
-                                                                                "Disposable Income","Terms of Trade"))
+y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c(
+                          "Hours Worked","Household_Savings","Unemployment",
+                          "CPI Change","Real Labour Costs",
+                          "GDP % Change","Public Capital","Inventories",
+                          "Disposable Income","Terms of Trade"))
 #Plot macro data and comment on trends
 plot(y)
 
@@ -127,7 +128,7 @@ For many variables, we see an upward trend over time which follows Hours Worked 
 
 \newpage
 
-###Exercise 2
+## **Exercise 2**
 
 In this section we document the likelihood function of the model, and the probability density function of A and Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
 
@@ -139,7 +140,7 @@ We also specify the parameters determining the prior distribution matrices
 
 \newpage
 
-###Exercise 3 - Joint conditional posterior distribuion
+## **Exercise 3 - Joint conditional posterior distribution**
 
 ![](Exercise3-1.png)
 
@@ -149,13 +150,13 @@ We also specify the parameters determining the prior distribution matrices
 
 \newpage
 
-###Exercise 4
+## **Exercise 4**
 
 ![](Exercise4.png)
 
 \newpage
 
-###Exercise 5
+## **Exercise 5**
 
 ![](Exercise5-1.png) 
 
@@ -167,15 +168,24 @@ We also specify the parameters determining the prior distribution matrices
 ![](Exercise5-4.png) 
 ![](Exercise5-5.png)
 \newpage
-###Exercise 6
+## **Exercise 6 - Gibbs Sampler approach**
 In this section we explain our Gibbs Sampler and the use of the full conditional posterior distributions.
 
-###Exercise 7
 
-###Exercise 8
+\newpage
+### **Exercise 7 - Gibbs Sample R Function**
 
-###Exercise 9
 
-###Exercise 10
+\newpage
+### **Exercise 8 - Predictive Density approach **
 
-###Exercise 11
+
+\newpage
+### **Exercise 9 - Predictive Density R Function**
+
+\newpage
+
+### **Exercise 10 - Parameter Estimates**
+
+\newpage
+### **Exercise 11 - Q4 2021 Forecast for 2022**
