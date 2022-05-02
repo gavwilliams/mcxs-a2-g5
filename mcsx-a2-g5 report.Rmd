@@ -54,7 +54,199 @@ We also specify the parameters determining the prior distribution matrices \bar{
 
 ![](Exercise5-3.png) 
 
+<<<<<<< Updated upstream
 ![](Exercise5-4.png) 
+=======
+# Exercise 6
+```{r}
+library(readrba)
+library(readabs)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+# DATA COLLECTION AND TRANSFORMING
+############################################################
+
+HOURS               = read_abs(series_id ="A2304428W")
+HOURS               = HOURS %>%slice(-c(1:101))
+HOURS               = HOURS[c(4,6)]
+
+HHSAVINGS           = read_abs(series_id = "A2323382F")
+HHSAVINGS           = HHSAVINGS %>%slice(-c(1:101))
+HHSAVINGS           = HHSAVINGS[c(4,6)]
+
+RGDP                = read_abs(series_id = "A2304414J")
+RGDP                = RGDP %>%slice(-c(1:101))
+RGDP                = RGDP[c(4,6)]
+
+CPI                 = read_abs(series_id = "A3604506F")
+CPI                 = CPI %>%slice(-c(1:145))
+CPI                 = CPI[c(4,6)]
+
+VACANCIES           = read_abs(series_id = "A590698F")
+VACANCIES           = VACANCIES %>%slice(-c(1:22))
+VACANCIES           = VACANCIES[c(4,6)]
+
+VALUE_ADDED         = read_abs(series_id = "A3606058X")
+VALUE_ADDED         = VALUE_ADDED %>%slice(-c(1:101))
+VALUE_ADDED         = VALUE_ADDED[c(4,6)]
+
+GDP_PHW             = read_abs(series_id = "A2304424L")
+GDP_PHW             = GDP_PHW %>%slice(-c(1:101))
+GDP_PHW             = GDP_PHW[c(4,6)]
+
+NET_SAVINGS         = read_abs(series_id = "A2304424L")
+NET_SAVINGS         = NET_SAVINGS %>%slice(-c(1:101))
+NET_SAVINGS         = NET_SAVINGS[c(4,6)]
+
+DOMESTIC_DEMAND     = read_abs(series_id = "A2304198A")
+DOMESTIC_DEMAND     = DOMESTIC_DEMAND %>%slice(-c(1:101))
+DOMESTIC_DEMAND     = DOMESTIC_DEMAND[c(4,6)]
+
+DISP_INC_PC         = read_abs(series_id = "A2304416L")
+DISP_INC_PC         = DISP_INC_PC %>% slice(-c(1:101))
+DISP_INC_PC         = DISP_INC_PC[c(4,6)]
+
+TOT                 = read_abs(series_id = "A2304400V")
+TOT                 = TOT %>% slice(-c(1:101))
+TOT                 = TOT[c(4,6)]
+
+# setup
+############################################################
+N                   = 10
+p                   = 4
+K                   = 1+p*N
+S                   = 50000
+h                   = #TBD
+  
+TT                  = nrow(Y)
+T                   = TT - 1
+
+# Create Y and X
+############################################################
+y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
+y_VEC2              = merge(RGDP, CPI, by = 'date')
+y_VEC3              = merge(GDP_PHW, NET_SAVINGS, by ='date')
+y_VEC4              = merge(DOMESTIC_DEMAND, DISP_INC_PC, by ='date')
+y_VEC5              = merge(TOT, VALUE_ADDED, by ='date')
+
+y1                  = merge(y_VEC1, y_VEC2, by = 'date')
+y2                  = merge(y_VEC3, y_VEC4, by = 'date')
+y3                  = merge(y1, y2, by ='date')
+
+y                   = merge(y3, y_VEC5, by = 'date') 
+y                   = y %>% slice(-c(1:39))
+y                   = ts(y[,c(2:11)], start = c(1994,3), frequency = 4, names=c("VAR1","VAR2","VAR3","VAR4","VAR5","VAR6","VAR7","VAR8","VAR9","VAR10"))
+
+Y                   = ts(y[(p+1):nrow(y),],start = c(1994,3), frequency = 4)
+X                   = matrix(1,nrow(Y),1)
+X                   = cbind(X,
+                            y[5:nrow(y)-1,],
+                            y[5:nrow(y)-2,],
+                            y[5:nrow(y)-3,],
+                            y[5:nrow(y)-4,]
+                            )
+          
+##GRAPHING CODE
+#GermanGNP           = ts(as.data.frame(read.csv("GermanGNP.csv")), start=c(1975,1), frequency=4, names="GermanGNP")
+#GerGNP              = matrix(GermanGNP)
+#colnames(GerGNP)    = "German GNP"
+#plot.ts(GermanGNP, lwd=3, col="purple", main="")
+
+## MLE
+A_HAT                 = (1/((t(X)%*%X)))%*%t(X)%*%Y
+SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)
+round(A_HAT,3)
+round(SIGMA_HAT,3)
+round(cov2cor(SIGMA_HAT),3)
+
+# PRIOR DISTRIBUTION
+############################################################
+KAPPA_P_A             = 100
+KAPPA_P_E             = 0.02^2
+A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
+A_MEAN_PRI[2:11,]     = diag(10)
+V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
+V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
+
+S_PRIOR               = diag(diag(SIGMA_HAT)) 
+NU_PRIOR              = N+1
+
+A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
+SIGMA_PRIOR           = diag(10)
+SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
+
+#SPECIFYING HYPER-PARAMETERS
+hyper                 = list(1,1,1,1,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
+names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
+
+
+#POSTERIOR DRAWS
+posterior_A           = array(NA, c(S, K, N))
+posterior_E           = array(NA, c(N, N, S))
+posterior_ka          = matrix(NA, S)
+posterior_ke          = matrix(NA, S)
+
+GIBBS_SAMPLER = function(S, Y, X , hyper){
+
+  for (s in 1:S){
+    # HYPER-PARAMETER ESTIMATION -- K_E
+    alpha_bar_ke        = hyper$ALPHA_PRIOR_Ke + ((hyper$V_PRIOR*N))/2
+    beta_bar_ke         = hyper$BETA_PRIOR_Ke + 0.5*sum(diag(hyper$S_PRIOR%*%solve(SIGMA_PRIOR)))
+  
+    # SAMPLING -- K_E
+    KAPPA_P_E           = rgamma(1, shape = alpha_bar_ke, scale = 1/beta_bar_ke)
+    posterior_ke        = KAPPA_P_E
+    
+  
+  
+    # HYPER-PARAMETER ESTIMATION -- K_A
+    s_bar_ka            = sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper$A_MEAN_PRI))%*%(A_PRIOR-hyper$A_MEAN_PRI))) + hyper$S_PRIOR_Ka
+    v_bar_ka            = hyper$V_PRIOR_KA + N*K
+  
+    # SAMPLING -- K_A
+    KAPPA_P_A           = s_bar_ka/rchisq(1, v_bar_ka)
+    posterior_ka        = KAPPA_P_A
+  
+    # PARAMETERS OF MVNIW POSTERIOR
+    V_bar_inv           = crossprod(X) + V_PRIOR_INV*(1/KAPPA_P_A)
+    V_bar               = solve(V_bar_inv)
+    A_bar               = V_bar%*%(t(X)%*%Y + solve(KAPPA_P_A*V_bar)%*%hyper$A_MEAN_PRI)
+    
+    S_bar         = crossprod(Y) + KAPPA_P_E*hyper$S_PRIOR + t(hyper$A_MEAN_PRI)%*%solve((KAPPA_P_A*hyper$V_PRIOR))%*%hyper$A_MEAN_PRI - t(A_bar)%*%V_bar_inv%*%A_bar
+    #S_bar_inv           = solve(S_bar)
+    S_bar              = 0.5*(S_bar + t(S_bar))
+    S_bar_chol         = chol(S_bar)
+    S_bar_inv          = backsolve(S_bar_chol, forwardsolve(t(S_bar_chol), diag(N)))
+    nu_bar              = T + NU_PRIOR
+
+    # SAMPLE -- aux_A & aux_E
+    L                   = t(solve(chol(V.bar.inv)))
+    SIGMA_POST          = solve(rWishart(1, df = nu_bar, Sigma =S_bar_inv)[,,1])
+    draw.norm           = array(rnorm(prod(N*K)),c(K,N))
+    A_POST              = A_bar + L%*%draw.norm%*% chol(SIGMA_POST)
+                          
+    round(apply(A_POST,1:2, mean),3)
+                          
+    posterior_ka[s] = KAPPA_P_A
+    posterior_ke[s] = KAPPA_P_E
+    posterior_A[s,,] = A_POST
+    posterior_E[,,s] = SIGMA_POST
+  }
+
+  # OUTPUT  
+  return(
+    list(
+      A           = posterior_A,
+      E           = posterior_E,
+      Ka          = posterior_ka,
+      Ke          = posterior_ke,
+    )
+  )
+}
+>>>>>>> Stashed changes
 
 ![](Exercise5-5.png)
 
