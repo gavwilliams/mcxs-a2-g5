@@ -174,7 +174,9 @@ In this section we explain our Gibbs Sampler and the use of the full conditional
 
 \newpage
 ### **Exercise 7 - Gibbs Sample R Function**
-
+``` {r, message=FALSE}
+#NOTE - R code must be included within these chunks (i.e. between these dotted lines) so R can interpret properly.
+```
 
 \newpage
 ### **Exercise 8 - Predictive Density approach **
@@ -182,10 +184,22 @@ In this section we explain our Gibbs Sampler and the use of the full conditional
 
 \newpage
 ### **Exercise 9 - Predictive Density R Function**
+``` {r, message=FALSE}
+#NOTE - R code must be included within these chunks (i.e. between these dotted lines) so R can interpret properly.
+```
+
 
 \newpage
 
 ### **Exercise 10 - Parameter Estimates**
 
+``` {r, message=FALSE}
+#NOTE - R code must be included within these chunks (i.e. between these dotted lines) so R can interpret properly.
+```
+
 \newpage
 ### **Exercise 11 - Q4 2021 Forecast for 2022**
+
+``` {r, message=FALSE}
+#NOTE - R code must be included within these chunks (i.e. between these dotted lines) so R can interpret properly.
+```
