@@ -124,6 +124,8 @@ In this section we document the likelihood function of the model, and the probab
 
 We also specify the parameters determining the prior distribution matrices \bar{A}, \bar{V}, \bar{S} and \bar{v}.
 
+![](Exercise2-2.png)
+
 \newpage
 
 # Exercise 3 - Joint conditional posterior distribuion
