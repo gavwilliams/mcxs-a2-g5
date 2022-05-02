@@ -61,7 +61,7 @@ TOT                 = TOT[c(4,6)]
 N                   = 10
 p                   = 4
 K                   = 1+p*N
-S                   = 11000
+S                   = 1100
   
 TT                  = nrow(Y)
 T                   = TT - 1
@@ -101,7 +101,7 @@ plot(y)
 #plot.ts(GermanGNP, lwd=3, col="purple", main="")
 
 ## MLE
-A_HAT                 = (1/((t(X)%*%X)))%*%t(X)%*%Y
+A_HAT                 = solve(t(X)%*%X)%*%t(X)%*%Y
 SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)/T
 round(A_HAT,3)
 round(SIGMA_HAT,3)
