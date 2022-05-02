@@ -11,16 +11,21 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Exercise 1 
+#**Macroeconometrics ECOM9007**
+##Assignment 2 - Group 5
+Prepared by Alex Rendell, Gavin Williams, Xinyu Dang
 
-In this section, we will (i) List and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations
+
+###Exercise 1 
+
+In this section, we  (i) list and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations
 
 ``` {r}
 ```
 
 \newpage
 
-# Exercise 2
+###Exercise 2
 
 In this section we document the likelihood function of the model, and the probability density function of A and \Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
 
@@ -56,7 +61,8 @@ We also specify the parameters determining the prior distribution matrices \bar{
 
 <<<<<<< Updated upstream
 ![](Exercise5-4.png) 
-=======
+![](Exercise5-5.png)
+
 # Exercise 6
 ```{r}
 library(readrba)
@@ -246,9 +252,8 @@ GIBBS_SAMPLER = function(S, Y, X , hyper){
     )
   )
 }
->>>>>>> Stashed changes
 
-![](Exercise5-5.png)
+```
 
 # Exercise 6
 
