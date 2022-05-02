@@ -1,5 +1,5 @@
 ---
-title: "mcxs-a2-g5 report"
+title: "Macroeconometrics Assignment 2 - Group 5 Report"
 author: "Alex Rendell, Xinyu Dang, Gavin Williams"
 date: "29/04/2022"
 output:
@@ -11,19 +11,30 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#**Macroeconometrics ECOM9007**
-##Assignment 2 - Group 5
-Prepared by Alex Rendell, Gavin Williams, Xinyu Dang
-
-
-###Exercise 1 
+### Exercise 1 
 
 In this section, we (i) list and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations.
 
 **Selections**
+To forecast Hours worked (Index), we selected:
+- Household Savings Ratio (Proportion)
+- Total Unemployed persons (000s); 
+- CPI Index Change (Percent change from previous period); 
+- Real Unit Labour Costs (Index); 
+- GDP Growth (Chain Volume Measure, Percentage change)
+- Inventories (Chain Volume Measure, $millions)
+- Public Capital (Gross fixed capital formation - Chain volume measure, $millions)
+- Disposable Income per Capita (Real net national disposable income per capita, $)
+- Terms of Trade (Percentage change from previous period)
+
+All measures are at the national level, seasonally adjusted and measured quarterly for consistency of the analysis.
+
+Unemployment and Real Unit Labour Costs relate to Hours worked through obvious labour supply and demand relationships between price of labour (wages) as well as the size of the workforce. Household savings and Disposable Income will relate to Labour Supply and hence Hours Worked as agents supply less labour when they can rely on greater savings/income.
+
+We consider GDP Growth, Terms of Trade, Public Capital and Inventories to have a relationship with Hours Worked, as when the demand for goods or level of investment changes (i.e. capital), this will affect the demand for labour for production, and thus the number of hours supplied by employers. Similarly there will be a relationship between CPI (prices of household goods and services purchased) and labour demand and supply, with employers and employees making decisions based on their expenditures.
 
 
-``` {r}
+``` {r, message=FALSE}
 # INSTALLING REQUIRED PACKAGES
 library(readrba)
 library(readabs)
@@ -34,6 +45,7 @@ library(lubridate)
 library(reticulate)
 library(mvtnorm)
 library(HDInterval)
+library(tinytex)
 set.seed(123456)
 
 # DATA COLLECTION AND TRANSFORMING
@@ -49,9 +61,9 @@ HHSAVINGS           = HHSAVINGS %>%slice(-c(1:101))
 HHSAVINGS           = HHSAVINGS[c(4,6)]
 
 ##VAR3
-EMPLOYMENT          = read_abs(series_id = "A2454521V")
-EMPLOYMENT          = EMPLOYMENT %>%slice(-c(1:109))
-EMPLOYMENT          = EMPLOYMENT[c(4,6)]
+UNEMPLOYMENT        = read_abs(series_id = "A2454521V")
+UNEMPLOYMENT        = UNEMPLOYMENT %>%slice(-c(1:109))
+UNEMPLOYMENT        = UNEMPLOYMENT[c(4,6)]
 
 ##VAR4
 CPI_CHANGE_Q        = read_abs(series_id = "A2325850V")
@@ -89,9 +101,8 @@ TOT                 = TOT %>% slice(-c(1:101))
 TOT                 = TOT[c(4,6)]
 
 # Create Y and X
-############################################################
 y_VEC1              = merge(HOURS, HHSAVINGS, by = 'date')
-y_VEC2              = merge(EMPLOYMENT, CPI_CHANGE_Q, by = 'date')
+y_VEC2              = merge(UNEMPLOYMENT, CPI_CHANGE_Q, by = 'date')
 y_VEC3              = merge(REAL_LABOUR_COST, GDP_PCT_CHANGE, by ='date')
 y_VEC4              = merge(PUBLIC_CAPITAL, INVENTORIES, by ='date')
 y_VEC5              = merge(DISP_INC_PC, TOT, by ='date')
@@ -102,7 +113,7 @@ y3                  = merge(y1, y2, by ='date')
 
 y                   = merge(y3, y_VEC5, by = 'date') 
 y                   = y %>% slice(-c(1:8))
-y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c("Hours Worked","Household_Savings","Employment",
+y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c("Hours Worked","Household_Savings","Unemployment",
                                                                                 "CPI Change","Real Labour Costs",
                                                                                 "GDP % Change","Public Capital","Inventories",
                                                                                 "Disposable Income","Terms of Trade"))
@@ -111,24 +122,24 @@ plot(y)
 
 ```
 **Observations**
-
+For many variables, we see an upward trend over time which follows Hours Worked (which has steadily increased over time). The trend is less obvious when considering variables which are percentage changes from the previous period. We also see a downward trend in real labour unit costs.
 
 
 \newpage
 
 ###Exercise 2
 
-In this section we document the likelihood function of the model, and the probability density function of A and \Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
+In this section we document the likelihood function of the model, and the probability density function of A and Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
 
 ![](Exercise2.png)
 
-We also specify the parameters determining the prior distribution matrices \bar{A}, \bar{V}, \bar{S} and \bar{v}.
+We also specify the parameters determining the prior distribution matrices
 
 ![](Exercise2-2.png)
 
 \newpage
 
-# Exercise 3 - Joint conditional posterior distribuion
+###Exercise 3 - Joint conditional posterior distribuion
 
 ![](Exercise3-1.png)
 
@@ -138,13 +149,13 @@ We also specify the parameters determining the prior distribution matrices \bar{
 
 \newpage
 
-# Exercise 4
+###Exercise 4
 
 ![](Exercise4.png)
 
 \newpage
 
-# Exercise 5
+###Exercise 5
 
 ![](Exercise5-1.png) 
 
@@ -156,132 +167,15 @@ We also specify the parameters determining the prior distribution matrices \bar{
 ![](Exercise5-4.png) 
 ![](Exercise5-5.png)
 \newpage
-# Exercise 6
+###Exercise 6
 In this section we explain our Gibbs Sampler and the use of the full conditional posterior distributions.
 
-# Exercise 7
-```{r}
-# setup
-############################################################
-N                   = 10
-p                   = 4
-K                   = 1+p*N
-S                   = 50000
-h                   = #TBD
-  
-TT                  = nrow(Y)
-T                   = TT - 1
+###Exercise 7
 
-# Create Y and X
-############################################################
-Y                   = ts(y[(p+1):nrow(y),],start = c(1994,3), frequency = 4)
-X                   = matrix(1,nrow(Y),1)
-X                   = cbind(X,
-                            y[5:nrow(y)-1,],
-                            y[5:nrow(y)-2,],
-                            y[5:nrow(y)-3,],
-                            y[5:nrow(y)-4,]
-                            )
-    
+###Exercise 8
 
-## MLE
-A_HAT                 = (1/((t(X)%*%X)))%*%t(X)%*%Y
-SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)
-round(A_HAT,3)
-round(SIGMA_HAT,3)
-round(cov2cor(SIGMA_HAT),3)
+###Exercise 9
 
-# PRIOR DISTRIBUTION
-############################################################
-KAPPA_P_A             = 100
-KAPPA_P_E             = 0.02^2
-A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
-A_MEAN_PRI[2:11,]     = diag(10)
-V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
-V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
+###Exercise 10
 
-S_PRIOR               = diag(diag(SIGMA_HAT)) 
-NU_PRIOR              = N+1
-
-A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
-SIGMA_PRIOR           = diag(10)
-SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
-
-#SPECIFYING HYPER-PARAMETERS
-hyper                 = list(1,1,1,1,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
-names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
-
-
-#POSTERIOR DRAWS
-posterior_A           = array(NA, c(S, K, N))
-posterior_E           = array(NA, c(N, N, S))
-posterior_ka          = matrix(NA, S)
-posterior_ke          = matrix(NA, S)
-
-GIBBS_SAMPLER = function(S, Y, X , hyper){
-
-  for (s in 1:S){
-    # HYPER-PARAMETER ESTIMATION -- K_E
-    alpha_bar_ke        = hyper$ALPHA_PRIOR_Ke + ((hyper$V_PRIOR*N))/2
-    beta_bar_ke         = hyper$BETA_PRIOR_Ke + 0.5*sum(diag(hyper$S_PRIOR%*%solve(SIGMA_PRIOR)))
-  
-    # SAMPLING -- K_E
-    KAPPA_P_E           = rgamma(1, shape = alpha_bar_ke, scale = 1/beta_bar_ke)
-    posterior_ke        = KAPPA_P_E
-    
-  
-  
-    # HYPER-PARAMETER ESTIMATION -- K_A
-    s_bar_ka            = sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper$A_MEAN_PRI))%*%(A_PRIOR-hyper$A_MEAN_PRI))) + hyper$S_PRIOR_Ka
-    v_bar_ka            = hyper$V_PRIOR_KA + N*K
-  
-    # SAMPLING -- K_A
-    KAPPA_P_A           = s_bar_ka/rchisq(1, v_bar_ka)
-    posterior_ka        = KAPPA_P_A
-  
-    # PARAMETERS OF MVNIW POSTERIOR
-    V_bar_inv           = crossprod(X) + V_PRIOR_INV*(1/KAPPA_P_A)
-    V_bar               = solve(V_bar_inv)
-    A_bar               = V_bar%*%(t(X)%*%Y + solve(KAPPA_P_A*V_bar)%*%hyper$A_MEAN_PRI)
-    
-    S_bar         = crossprod(Y) + KAPPA_P_E*hyper$S_PRIOR + t(hyper$A_MEAN_PRI)%*%solve((KAPPA_P_A*hyper$V_PRIOR))%*%hyper$A_MEAN_PRI - t(A_bar)%*%V_bar_inv%*%A_bar
-    #S_bar_inv           = solve(S_bar)
-    S_bar              = 0.5*(S_bar + t(S_bar))
-    S_bar_chol         = chol(S_bar)
-    S_bar_inv          = backsolve(S_bar_chol, forwardsolve(t(S_bar_chol), diag(N)))
-    nu_bar              = T + NU_PRIOR
-
-    # SAMPLE -- aux_A & aux_E
-    L                   = t(solve(chol(V.bar.inv)))
-    SIGMA_POST          = solve(rWishart(1, df = nu_bar, Sigma =S_bar_inv)[,,1])
-    draw.norm           = array(rnorm(prod(N*K)),c(K,N))
-    A_POST              = A_bar + L%*%draw.norm%*% chol(SIGMA_POST)
-                          
-    round(apply(A_POST,1:2, mean),3)
-                          
-    posterior_ka[s] = KAPPA_P_A
-    posterior_ke[s] = KAPPA_P_E
-    posterior_A[s,,] = A_POST
-    posterior_E[,,s] = SIGMA_POST
-  }
-
-  # OUTPUT  
-  return(
-    list(
-      A           = posterior_A,
-      E           = posterior_E,
-      Ka          = posterior_ka,
-      Ke          = posterior_ke,
-    )
-  )
-}
-
-```
-
-# Exercise 6
-
-# Exercise 7
-
-# Exercise 8
-
-# Exercise 9
+###Exercise 11
