@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 In this section, we (i) list and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations.
 
-**Selections**\\
+**Selections**\
 To forecast Hours worked (Index), we selected:
 - Household Savings Ratio (Proportion)
 - Total Unemployed persons (000s); 
@@ -49,7 +49,7 @@ library(tinytex)
 set.seed(123456)
 
 # DATA COLLECTION AND TRANSFORMING
-############################################################
+
 ##VAR1
 HOURS               = read_abs(series_id ="A2304428W")
 HOURS               = HOURS %>%slice(-c(1:101))
@@ -122,7 +122,7 @@ y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c(
 plot(y)
 
 ```
-**Observations**
+**Observations**\
 For many variables, we see an upward trend over time which follows Hours Worked (which has steadily increased over time). The trend is less obvious when considering variables which are percentage changes from the previous period. We also see a downward trend in real labour unit costs.
 
 
