@@ -490,46 +490,46 @@ FORECAST_YH_LOOP              = array(NA,c(h,10,S,I))
 FORECAST_YHM_LOOP             = array(NA,c(h,10,I))
 
 for (i in 1:I){
-  Y_LOOP                   = Y[1:120+i,]
-  X_LOOP                   = X[1:120+i,]
-  T = nrow(Y_LOOP)
-  
-  A_HAT                 = solve(t(X_LOOP)%*%X_LOOP)%*%t(X_LOOP)%*%Y_LOOP
-  SIGMA_HAT             = t(Y_LOOP-X_LOOP%*%A_HAT)%*%(Y_LOOP-X_LOOP%*%A_HAT)/T
-  round(A_HAT,3)
-  round(SIGMA_HAT,3)
-  round(cov2cor(SIGMA_HAT),3)
-  
-  KAPPA_P_A             = 100
-  KAPPA_P_E             = 0.02^2
-  A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
-  A_MEAN_PRI[2:11,]     = diag(10)
-  V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
-  V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
-  s.ols       = rep(NA,N)
-  for (n in 1:N){
-    s.ols[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
-  }
-  S_PRIOR               = diag(s.ols)
-  NU_PRIOR              = N+1
-  
-  A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
-  SIGMA_PRIOR           = diag(10)
-  SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
-  
-  hyper                 = list(1,1,1,1,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
-  names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
-  
-  posterior_A           = array(NA, c(S, K, N))
-  posterior_E           = array(NA, c(N, N, S))
-  posterior_ka          = matrix(NA, S)
-  posterior_ke          = matrix(NA, S)
-  
-  SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y_LOOP , X_LOOP, hyper)
-  FORECAST = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
-  
-  FORECAST_YH_LOOP[,,,i]             = FORECAST$Y_FORECAST
-  FORECAST_YHM_LOOP[,,i]             = FORECAST$Y_M_FORECAST
+      Y_LOOP                   = Y[1:120+i,]
+      X_LOOP                   = X[1:120+i,]
+      T = nrow(Y_LOOP)
+      
+      A_HAT                 = solve(t(X_LOOP)%*%X_LOOP)%*%t(X_LOOP)%*%Y_LOOP
+      SIGMA_HAT             = t(Y_LOOP-X_LOOP%*%A_HAT)%*%(Y_LOOP-X_LOOP%*%A_HAT)/T
+      round(A_HAT,3)
+      round(SIGMA_HAT,3)
+      round(cov2cor(SIGMA_HAT),3)
+      
+      KAPPA_P_A             = 100
+      KAPPA_P_E             = 0.02^2
+      A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
+      A_MEAN_PRI[2:11,]     = diag(10)
+      V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
+      V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
+      s.ols       = rep(NA,N)
+      for (n in 1:N){
+        s.ols[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
+      }
+      S_PRIOR               = diag(s.ols)
+      NU_PRIOR              = N+1
+      
+      A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
+      SIGMA_PRIOR           = diag(10)
+      SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
+      
+      hyper                 = list(1,1,1,1,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
+      names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
+      
+      posterior_A           = array(NA, c(S, K, N))
+      posterior_E           = array(NA, c(N, N, S))
+      posterior_ka          = matrix(NA, S)
+      posterior_ke          = matrix(NA, S)
+      
+      SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y_LOOP , X_LOOP, hyper)
+      FORECAST = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
+      
+      FORECAST_YH_LOOP[,,,i]             = FORECAST$Y_FORECAST
+      FORECAST_YHM_LOOP[,,i]             = FORECAST$Y_M_FORECAST
 }
 
 I_FORECAST_YH_AVGs            = apply(FORECAST_YH_LOOP,c(1,4), mean)
