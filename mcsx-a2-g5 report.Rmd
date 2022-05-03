@@ -429,13 +429,11 @@ A_SD                      = list(A_SAMP_SD[1,],
                                   A_SAMP_SD[22:31,],
                                   A_SAMP_SD[32:41,])
 
-xtable(rbind(format(t(A_LIST[2:11,]),digits=1, scientific=FALSE)[1,],
-             format(t(A_SD[2:11,]),digits=1, scientific=FALSE)[1,])
+OUTPUT_A_MEAN             =A_SAMP_MEAN[2:11,]
+OUTPUT_A_SD               =A_SAMP_SD[2:11,]
 
-out                        =rbind(A_SAMP_MEAN[2:11,],A_SAMP_SD[2:11,])
-colnames(out)              =c("$A_1$")
-
-A1_TABLE= kable(round(out,5), caption="A_1 Posterior Estimates of AR(4) Model")
+A1_MEAN_TABLE             = kable(round(OUTPUT_A_MEAN,5), caption="A_1 Posterior Mean Estimates of AR(4) Model")
+A1_SD_TABLE               = kable(round(OUTPUT_A_SD,5), caption="A_1 Posterior SD Estimates of AR(4) Model")
 
 ## TRACE-PLOTS
 plot.ts(SAMPLER_OUTPUT$A[1000:S], main = "trace plots", xlab = "", ylab = "A")
@@ -444,10 +442,11 @@ plot.ts(SAMPLER_OUTPUT$Ka[1000:S], main = "trace plots", xlab = "", ylab = "Ka")
 plot.ts(SAMPLER_OUTPUT$Ke[1000:S], main = "trace plots", xlab = "", ylab = "Ke")
 
 ## HISTOGRAMS
-hist(SAMPLER_OUTPUT$A[1000:S],, main = "histograms", xlab = "",ylab = "A", col = "blue", breaks = 25)
-hist(SAMPLER_OUTPUT$E[1000:S],, main = "histograms", xlab = "",ylab = "E", col = "blue", breaks = 25)
-hist(SAMPLER_OUTPUT$Ka[1000:S],, main = "histograms", xlab = "",ylab = "Ka", col = "blue", breaks = 25)
-hist(SAMPLER_OUTPUT$Ke[1000:S],, main = "histograms", xlab = "",ylab = "Ke", col = "blue", breaks = 25)
+hist(SAMPLER_OUTPUT$A[1000:S], main = "histograms", xlab = "",ylab = "A", col = mcxs2, breaks = 25)
+hist(SAMPLER_OUTPUT$E[1000:S], main = "histograms", xlab = "",ylab = "E", col = mcxs2, breaks = 25)
+hist(SAMPLER_OUTPUT$Ka[1000:S], main = "histograms", xlab = "",ylab = "Ka", col = mcxs2, breaks = 25)
+hist(SAMPLER_OUTPUT$Ke[1000:S], main = "histograms", xlab = "",ylab = "Ke", col = mcxs2, breaks = 25)
+
 
 ```
 It is evident from the oscillation about constant values in the trace plots for the parameters $A, \kappa_A, \kappa_\Sigma$ that there is some distributional convergence in the Markov Chain. The histogram for parameter $A$ shows that it is seemingly normally distributed centered at a value close to zero. 
@@ -464,6 +463,7 @@ Upon further inspection when analysing the posterior mean estimates for the para
 ``` {r, message=FALSE}
 # FORECAST FUCNTIONS & PULLING ESTIMATES
 FORECAST                = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
+
 FORECAST_YH             = FORECAST$Y_FORECAST
 FORECAST_YHM            = FORECAST$Y_M_FORECAST
 
