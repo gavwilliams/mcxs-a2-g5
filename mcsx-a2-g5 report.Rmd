@@ -407,7 +407,9 @@ FORECAST_FUNCTION = function(h,SAMPLER_OUTPUT){
 ### **Exercise 10 - Parameter Estimates**
 
 ``` {r, message=FALSE}
+
 SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y , X, hyper)
+
 # POSTERIOR MEANS 
 A_SAMP_MEAN               = round(apply(SAMPLER_OUTPUT$A,2:3,mean),3)
 A_SAMP_SD                 = round(apply(SAMPLER_OUTPUT$A,2:3,sd),3)
@@ -442,10 +444,10 @@ plot.ts(SAMPLER_OUTPUT$Ka[1000:S], main = "trace plots", xlab = "", ylab = "Ka")
 plot.ts(SAMPLER_OUTPUT$Ke[1000:S], main = "trace plots", xlab = "", ylab = "Ke")
 
 ## HISTOGRAMS
-hist(SAMPLER_OUTPUT$A[1000:S],, main = "histograms", xlab = "",ylab = "A", col = mcxs2, breaks = 25)
-hist(SAMPLER_OUTPUT$E[1000:S],, main = "histograms", xlab = "",ylab = "E", col = mcxs2, breaks = 25)
-hist(SAMPLER_OUTPUT$Ka[1000:S],, main = "histograms", xlab = "",ylab = "Ka", col = mcxs2, breaks = 25)
-hist(SAMPLER_OUTPUT$Ke[1000:S],, main = "histograms", xlab = "",ylab = "Ke", col = mcxs2, breaks = 25)
+hist(SAMPLER_OUTPUT$A[1000:S],, main = "histograms", xlab = "",ylab = "A", col = "blue", breaks = 25)
+hist(SAMPLER_OUTPUT$E[1000:S],, main = "histograms", xlab = "",ylab = "E", col = "blue", breaks = 25)
+hist(SAMPLER_OUTPUT$Ka[1000:S],, main = "histograms", xlab = "",ylab = "Ka", col = "blue", breaks = 25)
+hist(SAMPLER_OUTPUT$Ke[1000:S],, main = "histograms", xlab = "",ylab = "Ke", col = "blue", breaks = 25)
 
 ```
 It is evident from the oscillation about constant values in the trace plots for the parameters $A, \kappa_A, \kappa_\Sigma$ that there is some distributional convergence in the Markov Chain. The histogram for parameter $A$ shows that it is seemingly normally distributed centered at a value close to zero. 
