@@ -11,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### **Exercise 1** 
+### **Exercise 1 - Variable selection** 
 
 In this section, we (i) list and justify the selection of nine macroeconomic variables used to forecast 'Hours Worked', (ii) Source and transform the data for the ten variables into a data matrix, and (iii) Plot the data matrix and comment with observations.
 
@@ -140,7 +140,7 @@ For many variables, we see an upward trend over time which follows Hours Worked 
 
 \newpage
 
-## **Exercise 2**
+## **Exercise 2 - Likelihood function and joint prior distribution for parameter matrices**
 
 In this section we document the likelihood function of the model, and the probability density function of A and Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
 
@@ -160,7 +160,7 @@ We also specify the parameters determining the prior distribution matrices
 
 \newpage
 
-## **Exercise 4**
+## **Exercise 4 - Conditionally conjugate prior distributions for hyper-parameters**
 
 ![](exercise4.1.png)
 
@@ -183,14 +183,9 @@ $= [\kappa_A^Kdet(\underline{V})]^\frac{N}{2}(\kappa_A)^\frac{-\underline{\nu}_A
 $= \kappa_A^\frac{NK+\underline{\nu}_A+2}{2}exp[-\frac{1}{2}\frac{\underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))]}{\kappa_A}$
 
 <<<<<<< Updated upstream
-![](exercise5.1.png) 
 
-![](exercise5.2.png) 
-
-![](exercise5.3.png) 
 
 <<<<<<< Updated upstream
-![](exercise5.4.png) 
 
 =======
 Hence $\kappa_A \sim IG2(\bar{s}_A,\bar{\nu}_A)$
@@ -225,7 +220,7 @@ The Gibbs Sampler used for the estimation of the parameters of the model using t
 \\
 
 <<<<<<< Updated upstream
-![](exercise6.1.png)
+
 =======
 2. Sample $\kappa_A^{(s)} \sim p(\kappa_A | Y,X ,A^{(s-1)}, \Sigma^{(s-1)},\kappa_\Sigma^{(s-1)} = IG2(\bar{\nu}_A^{(s-1)}, \bar{s}_A^{(s-1)})$\
 >>>>>>> Stashed changes
