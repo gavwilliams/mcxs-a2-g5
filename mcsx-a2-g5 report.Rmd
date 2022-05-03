@@ -174,15 +174,15 @@ $p(\kappa_A |Y, X,\kappa_\Sigma,A,\Sigma) \propto p(A,\Sigma | \kappa_A,\kappa_\
 
 Where since we are conditioning on $\kappa_\Sigma$ the kernal of the distribution becomes:
 
- $p(\kappa_A |Y, X,\kappa_\Sigma,A,\Sigma) \propto det(\kappa_A \underline{V})^{(\frac{N}{2})}\exp[-\frac{1}{2}tr(\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))](\kappa_A)^\frac{-\underline{\nu}_A+2}{2}\exp[-\frac{1}{2}\frac{\underline{s}_A}{\kappa_A}]$
+ $p(\kappa_A |Y, X,\kappa_\Sigma,A,\Sigma) \propto det(\kappa_A \underline{V})^{(-\frac{N}{2})}\exp[-\frac{1}{2}tr(\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))](\kappa_A)^\frac{-(\underline{\nu}_A+2)}{2}\exp[-\frac{1}{2}\frac{\underline{s}_A}{\kappa_A}]$
 
-$= [\kappa_A^Kdet(\underline{V})]^\frac{N}{2}(\kappa_A)^\frac{-\underline{\nu}_A+2}{2}exp[-\frac{1}{2}\frac{\underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))]}{\kappa_A}$
+$= [\kappa_A^Kdet(\underline{V})]^\frac{-N}{2}(\kappa_A)^\frac{-(\underline{\nu}_A+2)}{2}exp[-\frac{1}{2}\frac{\underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}( \underline{V})^{-1}(A-\underline{A})]}{\kappa_A}$
 
-$= \kappa_A^\frac{NK+\underline{\nu}_A+2}{2}exp[-\frac{1}{2}\frac{\underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))]}{\kappa_A}$
+$= \kappa_A^\frac{-(NK+\underline{\nu}_A+2)}{2}exp[-\frac{1}{2}\frac{\underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}( \underline{V})^{-1}(A-\underline{A})]}{\kappa_A}$
 
 Hence $\kappa_A \sim IG2(\bar{s}_A,\bar{\nu}_A)$
 
-With : $\bar{s}_A =  \underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))]$
+With : $\bar{s}_A =  \underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}( \underline{V})^{-1}(A-\underline{A})]$
 
 And : $ \bar{\nu}_A = \underline{\nu}_A +NK$
 
