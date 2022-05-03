@@ -196,7 +196,7 @@ $= \kappa_\Sigma^\frac{-N\underline{\nu}}{2} det(\underline{S})^\frac{\underline
 
 $=\kappa_\Sigma^{\frac{-N\underline{\nu}}{2}+\underline{\alpha} -1}exp[(-\frac{1}{2}tr(\Sigma^{-1} \underline{S})+\frac{1}{\underline{\beta}_\Sigma})\kappa_\Sigma]$
 
-Hence $\kappa_\Sigma \sim IG(\bar{\alpha}_\Sigma,\bar{\beta}_\Sigma)$
+Hence $\kappa_\Sigma \sim Gamma(\bar{\alpha}_\Sigma,\bar{\beta}_\Sigma)$
 
 Where :$\bar{\alpha}_\Sigma = \underline{\alpha}_\Sigma -\frac{N\underline{\nu}}{2}$
 
@@ -215,7 +215,7 @@ The Gibbs Sampler used for the estimation of the parameters of the model using t
 
 3. Jointly Sample $\{A^{(s)},\Sigma^{(s)}\} \sim p(A,\Sigma | Y, X, \kappa_A^{(s)},\kappa_\Sigma^{(s)}) = MNIW_{(KxN)}(\bar{A}^{(s)}, \bar{V}^{(s)}, \bar{S}^{(s)}, \bar{\nu}^{(s)} )$\\
 
-Which are then repeated for $S_1 + S_2 = 11,000$ where the we discard the first $S_1 = 1000$ draws to ensure convergence. The output from the Gibbs Sampler are the draws $\{A^{(s)}, \Sigma^{(s)}, \kappa_A^{(s)}, \kappa_\Sigma^{(s)} \}^{S_2}_{s=S_1}$ from the Joint Posterior distribution $p(A, \Sigma, \kappa_A \kappa_\Sigma | Y, X )$.
+Which are then repeated for $S_1 + S_2 = 11,000$ where the we discard the first $S_1 = 1000$ draws to ensure convergence. The output from the Gibbs Sampler are the draws $\{A^{(s)}, \Sigma^{(s)}, \kappa_A^{(s)}, \kappa_\Sigma^{(s)} \}^{S_2}_{s=S_1}$ from the Joint Posterior distribution $p(A, \Sigma, \kappa_A, \kappa_\Sigma | Y, X )$.
 \newpage
 
 ### **Exercise 7 - Gibbs Sample R Function**
