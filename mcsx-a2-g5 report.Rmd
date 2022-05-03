@@ -129,7 +129,6 @@ y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c(
 
 #Plot macro data and comment on trends
 plot(y, main = "Plots of our ten variables", cex.lab = 0.7, col = "blue")
-plot(HOURS, HHSAVINGS, ylab = "", type = "l", main = "Plots of our ten variables", cex.lab = 0.7, col = "blue")
 
 
 ```
