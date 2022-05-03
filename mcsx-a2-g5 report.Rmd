@@ -449,7 +449,7 @@ hist(SAMPLER_OUTPUT$Ke[1000:S],, main = "histograms", xlab = "",ylab = "Ke", col
 ```
 It is evident from the oscillation about constant values in the trace plots for the parameters $A, \kappa_A, \kappa_\Sigma$ that there is some distributional convergence in the Markov Chain. The histogram for parameter $A$ shows that it is seemingly normally distributed centered at a value close to zero. 
 
-For both the hyper-parameters $\kappa_A$ and $\kappa_\Sigma$ the distributions are centered around 0.022 and $1.5 x 10^7$ respectively. The large estimates of the shrinkage parameters $\kappa_Sigma$ is caused by the consistent deviation of the distributional mass of the posterior from its mean. Both parameters have right-skewed distributional shapes with $\kappa_Sigma$ exhibiting a slightly higher modal concentration and defined right-tail. 
+For both the hyper-parameters $\kappa_A$ and $\kappa_\Sigma$ the distributions are centered around 0.022 and $1.5 x 10^7$ respectively. The large estimates of the shrinkage parameters $\kappa_\Sigma$ is caused by the consistent deviation of the distributional mass of the posterior from its mean. Both parameters have right-skewed distributional shapes with $\kappa_\Sigma$ exhibiting a slightly higher modal concentration and defined right-tail. 
 
 Lastly the histogram of for the parameter $\Sigma$ is highly concentrated distribution centered around 0 with a relatively small amount of positive outliers visible.
 
