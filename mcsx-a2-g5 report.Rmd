@@ -474,12 +474,6 @@ FORECAST_YH_SD          = round(apply(FORECAST$Y_FORECAST,1:2,sd),3)
 FORECAST_YHM_AVG        = apply(FORECAST$Y_M_FORECAST,1:2,mean)
 FORECAST_YHM_SD         = apply(FORECAST$Y_M_FORECAST,1:2,sd)
 
-xx = xtable(rbind(format(t(FORECAST_YH_AVG[1:4,1]),digits=1, scientific=FALSE)[1,],
-             format(t(FORECAST_YH_SD[1:4,1]),digits=1, scientific=FALSE)[1,])
-            
-             format(t(FORECAST_YHM_AVG[1:4,1]),digits=1, scientific=FALSE)[2,],
-             format(t(FORECAST_YHM_SD[1:4,1]),digits=1, scientific=FALSE)[2,]))
-
 OUTPUT                  = cbind(c(t(FORECAST_YH_AVG[1:4,1])), c(t(FORECAST_YH_SD[1:4,1])))
 colnames(OUTPUT)        = c("h-Period Forecast Mean", "h-Period Forecast SD")
 ```
