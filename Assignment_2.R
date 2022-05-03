@@ -67,15 +67,10 @@ TOT                 = TOT[c(4,6)]
 
 # setup
 ############################################################
-set.seed(2711197)
 N                   = 10
 p                   = 4
 K                   = 1+p*N
-<<<<<<< Updated upstream
-S                   = 1100
-=======
 S                   = 11000
->>>>>>> Stashed changes
   
 TT                  = nrow(Y)
 T                   = TT - 1
@@ -110,11 +105,7 @@ plot(Y)
 
 
 ## MLE
-<<<<<<< Updated upstream
 A_HAT                 = solve(t(X)%*%X)%*%t(X)%*%Y
-=======
-A_HAT                 = solve((t(X)%*%X))%*%t(X)%*%Y
->>>>>>> Stashed changes
 SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)/T
 round(A_HAT,3)
 round(SIGMA_HAT,3)
@@ -215,15 +206,23 @@ plot.ts(SAMPLER_OUTPUT$E[1000:S], main = "trace plots", xlab = "", ylab = "E")
 plot.ts(SAMPLER_OUTPUT$Ka[1000:S], main = "trace plots", xlab = "", ylab = "Ka")
 plot.ts(SAMPLER_OUTPUT$Ke[1000:S], main = "trace plots", xlab = "", ylab = "Ke")
 
-round(SAMPLER_OUTPUT$A[1,,], mean)
-mean(SAMPLER_OUTPUT$A[1,,],1:10)
-
-
 # report posterior means and sd of parameters
-A.E         = apply(A_POST,1:2,mean)
-A.sd        = apply(A.posterior,1:2,sd)
-Sigma.E     = apply(Sigma.posterior,1:2,mean)
-Sigma.sd    = apply(Sigma.posterior,1:2,sd)
+A_SAMP_MEAN               = apply(SAMPLER_OUTPUT$A,1:2,mean)
+A_SAMP_SD                 = apply(SAMPLER_OUTPUT$A,1:2,sd)
+SIGMA_SAMP_MEAN           = apply(SAMPLER_OUTPUT$E,1:2,mean)
+SIGMA_SAMP_SD             = apply(SAMPLER_OUTPUT$E,1:2,sd)
+
+library(xtable)
+
+xtable(rbind(format(t(A_SAMP_MEAN),digits=1, scientific=FALSE)[1,],
+             format(t(A_SAMP_SD),digits=1, scientific=FALSE)[1,],
+             format(t(A_SAMP_MEAN),digits=1, scientific=FALSE)[2,],
+             format(t(A_SAMP_SD),digits=1, scientific=FALSE)[2,]))
+
+xtable(rbind(format(Sigma.E,digits=1, scientific=FALSE)[1,],
+             format(Sigma.sd,digits=1, scientific=FALSE)[1,],
+             format(Sigma.E,digits=1, scientific=FALSE)[2,],
+             format(Sigma.sd,digits=1, scientific=FALSE)[2,]))
 
 
 # QUESTION 9 
@@ -232,7 +231,6 @@ h               = 4
 Y.h             = array(NA,c(h,10,S))
 Y.h.m           = array(NA,c(h,10))
 
-
 FORECAST_FUNCTION = function(h,SAMPLER_OUTPUT){
   for (s in 1:S){
     if (p==1){
@@ -247,7 +245,7 @@ FORECAST_FUNCTION = function(h,SAMPLER_OUTPUT){
       x.T           = c(1,as.vector(t(x.Ti)))
       x.T.m         = c(1,as.vector(t(x.Ti.m)))
       Y.f           = rmvnorm(1, mean = x.T%*%SAMPLER_OUTPUT$A[s,,], sigma=SAMPLER_OUTPUT$E[,,s])
-      Y.f.m         = x.T.m%*%A_POST
+      Y.f.m         = x.T.m%*%SAMPLER_OUTPUT$A[s,,]
       if (p==1){
         x.Ti        = Y.f
         x.Ti.m      = Y.f.m
@@ -269,56 +267,23 @@ FORECAST_FUNCTION = function(h,SAMPLER_OUTPUT){
   )
 }
 
-FORECAST = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
+FORECAST                = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
+FORECAST_YH             = FORECAST$Y_FORECAST
+FORECAST_YHM            = FORECAST$Y_M_FORECAST
 
-# QUESTION 10 
-# SAMPLE -- PREDICTIVE DENSITY FUNCTION
-h               = 4
-Y.h             = array(NA,c(h,2,S))
-Y.h.m           = array(NA,c(h,2))
-FORECAST_FUNCTION = function(h,SAMPLER_OUTPUT){
-  for (s in 1:S){
-    if (p==1){
-      x.Ti          = matrix(Y[(nrow(Y)-p+1):nrow(Y),],nrow=1)
-      x.Ti.m        = x.Ti
-    } else {
-      x.Ti          = Y[(nrow(Y)-p+1):nrow(Y),]
-      x.Ti          = x.Ti[p:1,]
-      x.Ti.m        = x.Ti
-    }
-    for (i in 1:h){
-      x.T           = c(1,as.vector(t(x.Ti)))
-      x.T.m         = c(1,as.vector(t(x.Ti.m)))
-      Y.f           = rmvnorm(1, mean = x.T%*%SAMPLER_OUTPUT$A[s,,], sigma=SAMPLER_OUTPUT$E[,,s])
-      Y.f.m         = x.T.m%*%A_POST
-      if (p==1){
-        x.Ti        = Y.f
-        x.Ti.m      = Y.f.m
-      } else {
-        x.Ti        = rbind(Y.f,x.Ti[1:(p-1),])
-        x.Ti.m      = rbind(Y.f.m,x.Ti.m[1:(p-1),])
-      }
-      Y.h[i,,s]     = Y.f[1:2]
-      Y.h.m[i,]     = Y.f.m[1:2]
-    }
-  }
-  
-  # OUTPUT  
-  return(
-    list(
-      Y_FORECAST    = Y.h,
-      Y_M_FORECAST  = Y.h.m
-    )
-  )
-}
-FORECAST = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
+FORECAST_YH_AVG         = apply(FORECAST$Y_FORECAST,1:2,mean)
+FORECAST_YH_SD          = apply(FORECAST$Y_FORECAST,1:2,sd)
+FORECAST_YHM_AVG        = apply(FORECAST$Y_M_FORECAST,1:2,mean)
+FORECAST_YHM_SD         = apply(FORECAST$Y_M_FORECAST,1:2,sd)
+
+
+
 # Define colors
 mcxs1  = "#05386B"
 mcxs2  = "#379683"
 mcxs3  = "#5CDB95"
 mcxs4  = "#8EE4AF"
 mcxs5  = "#EDF5E1"
-
 mcxs1.rgb   = col2rgb(mcxs1)
 mcxs1.shade1= rgb(mcxs1.rgb[1],mcxs1.rgb[2],mcxs1.rgb[3], alpha=50, maxColorValue=255)
 mcxs2.rgb   = col2rgb(mcxs2)
@@ -338,34 +303,119 @@ hour_point_forecast         = apply(Y.h[,1,],1,mean)
 hour_interval_forecast      = apply(Y.h[,1,],1,hdi,credMass=0.90)
 hour_range                  = range(y[,2],hour_interval_forecast)
 
+
+
 pdf(file="HOURS_Forecast.pdf", width=15,height=6)
 
-plot(1:(length(y[,1])+h),c(y[,1],hour_point_forecast), type="l", ylim=rgdp.range, axes=FALSE, xlab="", ylab="", lwd=2, col=mcxs1)
-axis(1,c(3,43,83,123,163,203,243,nrow(y),nrow(y)+h),c("1960","1970","1980","1990","2000","2010","2020","",""), col=mcxs1)
+plot(1:(length(y[,1])+h),c(y[,1],hour_point_forecast), type="l", ylim=hour_range, axes=FALSE, xlab="", ylab="", lwd=2, col=mcxs1)
+
+axis(1,c(17,54,83,134,nrow(y),nrow(y)+h),c("1990","2000","2010","2020","","", "",""), col=mcxs1)
+
 axis(2,c(hour_range[1],mean(hour_range),hour_range[2]),c("","HOURS",""), col=mcxs1)
+
 abline(v=246, col=mcxs1)
+
 polygon(c(length(y[,1]):(length(y[,1])+h),(length(y[,1]):(length(y[,1])+h))[21:1]),
+        
         c(y[90,1],hour_interval_forecast[1,],hour_interval_forecast[2,20:1],y[90,1]),
+        
         col=mcxs1.shade1, border=mcxs1.shade1)
 
 
+dim(y)
 
 
 
+plot(Y.h)
 
-Y_recent        = ts(rbind(Y[92:117,1:2],matrix(NA,h,2)),start=c(2009,3),frequency=4)
-interval_fs1    = apply(Yh1,1,hdi,credMass=0.68)
-lims_hours      = range(Y_recent[1:26,1],Yhm1[,1])
+# 2D plots of forecasts
+############################################################
+hour_point_forecast         = apply(Y.h[,1,],1,mean)
+hour_interval_forecast      = apply(Y.h[,1,],1,hdi,credMass=0.90)
+hour_range                  = range(y[,2],hour_interval_forecast)
 
-plot(1:nrow(Y_recent),Y_recent[,1], type="l", ylim=lims_hours, axes=FALSE, xlab="", ylab="", main=expression(HOURS[t]), lwd=2, col=mcxs1)
-axis(1,c(seq(from=1, to=30, by=4),30),c("","2010","","2012","","2014","","2016",""), col=mcxs1)
-axis(2,c(lims_hours[1],0,lims_hours[2]),round(c(lims_hours[1],0,lims_hours[2]),2), col=mcxs1)
-polygon(c(26:30,30:26), c(Y_recent[26,1],interval_fs1[1,,1],interval.fs2[2,h:1,1],Y_recent[26,1]), col=mcxs1.shade1,border=mcxs1.shade1)
-abline(h=0, col=mcxs1)
-lines(26:30, c(Y_recent[26,1],Yhm1[,1]),lwd=2,col=mcxs3)
-lines(26:30, c(Y_recent[26,1],Yhm2[,1]),lwd=2,col=mcxs2)
-lines(26:30, c(Y.recent[26,1],Yhm4[,1]),lwd=2,col=mcxs1)
+hours = 
+
+pdf(file="forecasts.pdf", width=15,height=6)
+par(mfrow=c(1,2), mar=rep(3,4),cex.axis=1.5)
+plot(1:(length(y[,1])+h),c(y[,1],hour_point_forecast), type="l", ylim=hour_range, axes=FALSE, xlab="", ylab="", lwd=2, col=mcxs1)
+axis(1,c(14,54,94,134,nrow(y),nrow(y)+h),c("1990","2000","2010","2020","",""), col=mcxs1)
+axis(2,c(hour_range[1],mean(hour_range),hour_range[2]),c("","HOURS",""), col=mcxs1)
+abline(v=246, col=mcxs1)
+polygon(c(length(y[,1]):(length(y[,1])+h),(length(y[,1]):(length(y[,1])+h))[21:1]),
+        c(y[141,1],hour_interval_forecast[1,],hour_interval_forecast[2,20:1],y[141,1]),
+        col=mcxs1.shade1, border=mcxs1.shade1
+dev.off())
+        
+        
+# time series plots
+############################################################
+HOURS_RANGE    = range(y[,1])
+
+pdf(file="data.pdf", width=15,height=6)
+par(mfrow=c(1,2), mar=rep(3,4),cex.axis=1.5)
+plot(1:length(y[,1]),y[,1], type="l", ylim=HOURS_RANGE, axes=FALSE, xlab="", ylab="", lwd=4, col=mcxs1)
+axis(1,c(14,54,94,134),c("1990","2000","2010","2020"), col=mcxs1)
+axis(2,c(HOURS_RANGE[1],mean(HOURS_RANGE),HOURS_RANGE[2]),c("","HOURS",""), col=mcxs1)
+dev.off()
 
 
+# QUESTION 12 -- FORECASTING PERFORMANCE
+############################################################
+# estimate model up to Q4 2018 (129)
+# 4 period ahead forcast
+# expand by 1 period Q1 2019 (130) estimate mdel
+# forecast 4 period ahead and save 
+I = 8
+FORECAST_YH_LOOP              = array(NA,c(h,10,S,I))
+FORECAST_YHM_LOOP             = array(NA,c(h,10,I))
 
-dim(FORECAST$Y_FORECAST)
+for (i in 1:I){
+        Y_LOOP                   = Y[1:120+i,]
+        X_LOOP                   = X[1:120+i,]
+        T = nrow(Y_LOOP)
+        
+        A_HAT                 = solve(t(X_LOOP)%*%X_LOOP)%*%t(X_LOOP)%*%Y_LOOP
+        SIGMA_HAT             = t(Y_LOOP-X_LOOP%*%A_HAT)%*%(Y_LOOP-X_LOOP%*%A_HAT)/T
+        round(A_HAT,3)
+        round(SIGMA_HAT,3)
+        round(cov2cor(SIGMA_HAT),3)
+
+        KAPPA_P_A             = 100
+        KAPPA_P_E             = 0.02^2
+        A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
+        A_MEAN_PRI[2:11,]     = diag(10)
+        V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
+        V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
+        s.ols       = rep(NA,N)
+        for (n in 1:N){
+          s.ols[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
+        }
+        S_PRIOR               = diag(s.ols)
+        NU_PRIOR              = N+1
+
+        A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
+        SIGMA_PRIOR           = diag(10)
+        SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
+
+        hyper                 = list(1,1,1,1,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
+        names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
+
+        posterior_A           = array(NA, c(S, K, N))
+        posterior_E           = array(NA, c(N, N, S))
+        posterior_ka          = matrix(NA, S)
+        posterior_ke          = matrix(NA, S)
+
+        SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y_LOOP , X_LOOP, hyper)
+        FORECAST = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
+        
+        FORECAST_YH_LOOP[,,,i]             = FORECAST$Y_FORECAST
+        FORECAST_YHM_LOOP[,,i]             = FORECAST$Y_M_FORECAST
+  }
+mean(FORECAST_YH_LOOP[1,1,,1])
+mean(FORECAST_YH_LOOP[2,1,,1])
+mean(FORECAST_YH_LOOP[3,1,,1])
+
+FORECAST_YH_AVG               = apply(FORECAST_YH_LOOP,,mean)
+help("mean")
+dim(FORECAST_YH_LOOP)
