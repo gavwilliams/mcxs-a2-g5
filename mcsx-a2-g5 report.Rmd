@@ -128,7 +128,7 @@ y                   = ts(y[,c(2:11)], start = c(1986,4), frequency = 4, names=c(
                                         "Diposable Income per capita","Terms_of_Trade"))
 
 #Plot macro data and comment on trends
-plot(y, main = "Plots of our ten variables", cex.lab = 0.7, col = "blue")
+plot(y, main = "Plots of our ten variables", cex.lab = 0.5, col = "blue")
 
 
 ```
@@ -140,7 +140,7 @@ For many variables, we see an upward trend over time which follows Hours Worked 
 
 ## **Exercise 2 - Likelihood function and joint prior distribution for parameter matrices**
 
-In this section we document the likelihood function of the model, and the probability density function of A and Sigma which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
+In this section we document the likelihood function of the model, and the probability density function of A and $\Sigma$ which follows joint matrix-variate normal-inverse Wishart distribution, and includes two hyperparameters.
 
 ![](exercise2.1.png)
 
@@ -180,12 +180,6 @@ $= [\kappa_A^Kdet(\underline{V})]^\frac{N}{2}(\kappa_A)^\frac{-\underline{\nu}_A
 
 $= \kappa_A^\frac{NK+\underline{\nu}_A+2}{2}exp[-\frac{1}{2}\frac{\underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))]}{\kappa_A}$
 
-<<<<<<< Updated upstream
-
-
-<<<<<<< Updated upstream
-
-=======
 Hence $\kappa_A \sim IG2(\bar{s}_A,\bar{\nu}_A)$
 
 With : $\bar{s}_A =  \underline{s}_A + tr[\Sigma^{-1}(A-\underline{A})^{'}(\kappa_A \underline{V})^{-1}(A-\underline{A}))]$
@@ -208,138 +202,138 @@ Where :$\bar{\alpha}_\Sigma = \underline{\alpha}_\Sigma -\frac{N\underline{\nu}}
 
 And : $\bar{\beta}_\Sigma = \frac{1}{2}tr(\Sigma^{-1} \underline{S})+\frac{1}{\beta_\Sigma}$
 
-
->>>>>>> Stashed changes
 \newpage
+
 ## **Exercise 6 - Gibbs Sampler approach**
+
 The Gibbs Sampler used for the estimation of the parameters of the model using the full conditions is utilised by first initialising $A$ and $\Sigma$ at $\{ A{(0)}, \Sigma^{(0)}\}$ with both $\kappa_A$ and $\kappa_\Sigma$ at $\{\kappa_A^{(0)},\kappa^{(0)}_\Sigma\} $ where at each iteration $s$ we:\\
 
 1. Sample $\kappa_\Sigma^{(s)} \sim p(\kappa_A | Y,X ,A^{(s-1)}, \Sigma^{(s-1)},\kappa_A^{(s-1)}) = Gamma(\bar{\alpha}_{A}^{(s-1)}, \bar{\beta}_{A}^{(s-1)})$\\
 \\
 
-<<<<<<< Updated upstream
-
-=======
 2. Sample $\kappa_A^{(s)} \sim p(\kappa_A | Y,X ,A^{(s-1)}, \Sigma^{(s-1)},\kappa_\Sigma^{(s-1)} = IG2(\bar{\nu}_A^{(s-1)}, \bar{s}_A^{(s-1)})$\
->>>>>>> Stashed changes
 
 3. Jointly Sample $\{A^{(s)},\Sigma^{(s)}\} \sim p(A,\Sigma | Y, X, \kappa_A^{(s)},\kappa_\Sigma^{(s)}) = MNIW_{(KxN)}(\bar{A}^{(s)}, \bar{V}^{(s)}, \bar{S}^{(s)}, \bar{\nu}^{(s)} )$\\
 
 Which are then repeated for $S_1 + S_2 = 11,000$ where the we discard the first $S_1 = 1000$ draws to ensure convergence. The output from the Gibbs Sampler are the draws $\{A^{(s)}, \Sigma^{(s)}, \kappa_A^{(s)}, \kappa_\Sigma^{(s)} \}^{S_2}_{s=S_1}$ from the Joint Posterior distribution $p(A, \Sigma, \kappa_A \kappa_\Sigma | Y, X )$.
 \newpage
+
 ### **Exercise 7 - Gibbs Sample R Function**
+
 ``` {r, message=FALSE}
-# GIBBS-SAMPLER SETUP ############################################################
-N                   = 10
-p                   = 4
-K                   = 1+p*N
-S                   = 11000
+
+        N                   = 10
+        p                   = 4
+        K                   = 1+p*N
+        S                   = 50
   
-TT                  = nrow(Y)
-T                   = TT - 1
-
-# CREATE X AND Y MATRICES ############################################################
-
-Y                   = ts(y[(p+1):nrow(y),],start = c(1986,4), frequency = 4)
-X                   = matrix(1,nrow(Y),1)
-X                   = cbind(X,
-                            y[5:nrow(y)-1,],
-                            y[5:nrow(y)-2,],
-                            y[5:nrow(y)-3,],
-                            y[5:nrow(y)-4,]
-)
-
-## MLE
-A_HAT                 = solve(t(X)%*%X)%*%t(X)%*%Y
-SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)/T
-round(A_HAT,3)
-round(SIGMA_HAT,3)
-round(cov2cor(SIGMA_HAT),3)
-
-# PRIOR DISTRIBUTIONS SPECIFICATION
-############################################################
-KAPPA_P_A             = 100
-KAPPA_P_E             = 0.02^2
-A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
-A_MEAN_PRI[2:11,]     = diag(10)
-V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
-V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
-
-s.ols       = rep(NA,N)
-for (n in 1:N){
-  s.ols[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
-}
-
-#S_PRIOR               = diag(diag(SIGMA_HAT)) 
-S_PRIOR               = diag(s.ols)
-NU_PRIOR              = N+1
-
-A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
-SIGMA_PRIOR           = diag(10)
-SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
-
-# SPECIFYING HYPER-PARAMETERS
-hyper                 = list(0.1,3,0.1,3,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
-names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
 
 
-# POSTERIOR DRAWS
-posterior_A           = array(NA, c(S, K, N))
-posterior_E           = array(NA, c(N, N, S))
-posterior_ka          = matrix(NA, S)
-posterior_ke          = matrix(NA, S)
+        # CREATE X AND Y MATRICES ############################################################
+        
+        Y                   = ts(y[(p+1):nrow(y),],start = c(1986,4), frequency = 4)
+        X                   = matrix(1,nrow(Y),1)
+        X                   = cbind(X,
+                                    y[5:nrow(y)-1,],
+                                    y[5:nrow(y)-2,],
+                                    y[5:nrow(y)-3,],
+                                    y[5:nrow(y)-4,]
+        )
+        
+        TT                  = nrow(Y)
+        T                   = TT - 1
+        
+        ## MLE
+        A_HAT                 = solve(t(X)%*%X)%*%t(X)%*%Y
+        SIGMA_HAT             = t(Y-X%*%A_HAT)%*%(Y-X%*%A_HAT)/T
+        round(A_HAT,3)
+        round(SIGMA_HAT,3)
+        round(cov2cor(SIGMA_HAT),3)
 
-GIBBS_SAMPLER = function(S, Y, X , hyper){
-  
-  for (s in 1:S){
-    # HYPER-PARAMETER ESTIMATION -- K_E
-    alpha_bar_ke        = hyper$ALPHA_PRIOR_Ke + ((hyper$V_PRIOR_KA*N))/2
-    beta_bar_ke         = solve(hyper$BETA_PRIOR_Ke) + 0.5*sum(diag(solve(SIGMA_PRIOR)%*%hyper$S_PRIOR))
+    # PRIOR DISTRIBUTIONS SPECIFICATION
+    ############################################################
+    KAPPA_P_A             = 100
+    KAPPA_P_E             = 0.02^2
+    A_MEAN_PRI            = matrix(0, nrow(A_HAT),ncol(A_HAT))
+    A_MEAN_PRI[2:11,]     = diag(10)
+    V_PRIOR               = diag(c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))   # COL SPECIFIC VAR
+    V_PRIOR_INV           = diag(1/c(KAPPA_P_E,KAPPA_P_A*((1:p)^(-2))%x%t(rep(1,N))))
     
-    # SAMPLING -- K_E
-    KAPPA_P_E           = rgamma(1, shape = alpha_bar_ke, scale = beta_bar_ke)
+    s.ols       = rep(NA,N)
+    for (n in 1:N){
+      s.ols[n]  = var(ar(x=Y[,n], aic=FALSE, order.max=8, method="ols")$resid[9:T])
+    }
     
-    # HYPER-PARAMETER ESTIMATION -- K_A
-    s_bar_ka            = sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper$A_MEAN_PRI))%*%(A_PRIOR-hyper$A_MEAN_PRI))) + hyper$S_PRIOR_Ka
-    v_bar_ka            = hyper$V_PRIOR_KA + N*K
+    #S_PRIOR               = diag(diag(SIGMA_HAT)) 
+    S_PRIOR               = diag(s.ols)
+    NU_PRIOR              = N+1
     
-    # SAMPLING -- K_A
-    KAPPA_P_A           = s_bar_ka/rchisq(1, v_bar_ka)
+    A_PRIOR               = matrix(0, nrow(A_HAT),ncol(A_HAT))
+    SIGMA_PRIOR           = diag(10)
+    SIGMA_PRIOR_INV       = solve(SIGMA_PRIOR)
     
-    # PARAMETERS OF MVNIW POSTERIOR
-    V_bar_inv           = crossprod(X) + diag(1/diag(hyper$V_PRIOR))*(1/KAPPA_P_A)
-    V_bar               = solve(V_bar_inv)
-    A_bar               = V_bar%*%(t(X)%*%Y + (diag(1/diag(V_bar))*(1/KAPPA_P_A))%*%hyper$A_MEAN_PRI)
+    # SPECIFYING HYPER-PARAMETERS
+    hyper                 = list(0.1,3,0.1,3,A_MEAN_PRI,S_PRIOR,V_PRIOR, NU_PRIOR)
+    names(hyper)          = c("S_PRIOR_Ka","V_PRIOR_KA","ALPHA_PRIOR_Ke","BETA_PRIOR_Ke","A_MEAN_PRI","S_PRIOR", "V_PRIOR", "NU_PRIOR")
     
-    S_bar               = KAPPA_P_E*hyper$S_PRIOR +crossprod(Y)+ t(hyper$A_MEAN_PRI)%*%((diag(1/diag(hyper$V_PRIOR)))*KAPPA_P_A)%*%hyper$A_MEAN_PRI - t(A_bar)%*%V_bar_inv%*%A_bar
-    S_bar_inv           = solve(S_bar)
-    nu_bar              = T + NU_PRIOR
-
     
-    # SAMPLE -- aux_A & aux_E
-    L                   = t(solve(chol(V_bar_inv)))
-    SIGMA_POST          = solve(rWishart(1, df = nu_bar, Sigma =S_bar_inv)[,,1])
-    draw.norm           = array(rnorm(prod(N*K)),c(K,N))
-    A_POST              = A_bar + L%*%draw.norm%*% chol(SIGMA_POST)
+    # POSTERIOR DRAWS
+    posterior_A           = array(NA, c(S, K, N))
+    posterior_E           = array(NA, c(N, N, S))
+    posterior_ka          = matrix(NA, S)
+    posterior_ke          = matrix(NA, S)
     
-    round(apply(A_POST,1:2, mean),3)
+    GIBBS_SAMPLER = function(S, Y, X , hyper){
+      
+      for (s in 1:S){
+        # HYPER-PARAMETER ESTIMATION -- K_E
+        alpha_bar_ke        = hyper$ALPHA_PRIOR_Ke + ((hyper$V_PRIOR_KA*N))/2
+        beta_bar_ke         = solve(hyper$BETA_PRIOR_Ke) + 0.5*sum(diag(solve(SIGMA_PRIOR)%*%hyper$S_PRIOR))
+        
+        # SAMPLING -- K_E
+        KAPPA_P_E           = rgamma(1, shape = alpha_bar_ke, scale = beta_bar_ke)
+        
+        # HYPER-PARAMETER ESTIMATION -- K_A
+        s_bar_ka            = sum(diag((solve(SIGMA_PRIOR)%*%t(A_PRIOR-hyper$A_MEAN_PRI))%*%(A_PRIOR-hyper$A_MEAN_PRI))) + hyper$S_PRIOR_Ka
+        v_bar_ka            = hyper$V_PRIOR_KA + N*K
+        
+        # SAMPLING -- K_A
+        KAPPA_P_A           = s_bar_ka/rchisq(1, v_bar_ka)
+        
+        # PARAMETERS OF MVNIW POSTERIOR
+        V_bar_inv           = crossprod(X) + diag(1/diag(hyper$V_PRIOR))*(1/KAPPA_P_A)
+        V_bar               = solve(V_bar_inv)
+        A_bar               = V_bar%*%(t(X)%*%Y + (diag(1/diag(V_bar))*(1/KAPPA_P_A))%*%hyper$A_MEAN_PRI)
+        
+        S_bar               = KAPPA_P_E*hyper$S_PRIOR +crossprod(Y)+ t(hyper$A_MEAN_PRI)%*%((diag(1/diag(hyper$V_PRIOR)))*KAPPA_P_A)%*%hyper$A_MEAN_PRI - t(A_bar)%*%V_bar_inv%*%A_bar
+        S_bar_inv           = solve(S_bar)
+        nu_bar              = T + NU_PRIOR
     
-    posterior_ka[s]     = KAPPA_P_A
-    posterior_ke[s]     = KAPPA_P_E
-    posterior_A[s,,]    = A_POST
-    posterior_E[,,s]    = SIGMA_POST
-  }
-  
-  # OUTPUT  
-  return(
-    list(
-      A           = posterior_A,
-      E           = posterior_E,
-      Ka          = posterior_ka,
-      Ke          = posterior_ke
-    )
-  )
-}
+        
+        # SAMPLE -- aux_A & aux_E
+        L                   = t(solve(chol(V_bar_inv)))
+        SIGMA_POST          = solve(rWishart(1, df = nu_bar, Sigma =S_bar_inv)[,,1])
+        draw.norm           = array(rnorm(prod(N*K)),c(K,N))
+        A_POST              = A_bar + L%*%draw.norm%*% chol(SIGMA_POST)
+        
+        round(apply(A_POST,1:2, mean),3)
+        
+        posterior_ka[s]     = KAPPA_P_A
+        posterior_ke[s]     = KAPPA_P_E
+        posterior_A[s,,]    = A_POST
+        posterior_E[,,s]    = SIGMA_POST
+      }
+      
+      # OUTPUT  
+      return(
+        list(
+          A           = posterior_A,
+          E           = posterior_E,
+          Ka          = posterior_ka,
+          Ke          = posterior_ke
+        )
+      )
+    }
 
 
 ```
@@ -360,7 +354,7 @@ Where we continue to iterate until the desired 4-period ahead forecast is sample
 
 $y^{(s)}_{t+4} \sim N_N(u^{(s)}+A_1^{(s)}y_{t+3}+A_2^{(s)}y_{t}+A_3^{(s)}y_{t+2}+A_4^{(s)}y_{t+1},\Sigma^{(s)})$
 
-Allowing us to obtain a (5 x 10 x S) array of forecasts $y_{t+1}^{(s)},...,y_{t+4}^{(s)}^{S=1000}_s=1$ for each period up until the desired forecast horizon.
+Allowing us to obtain a (10 x 4 x S) array of forecasts $y_{t+1}^{(s)},...,y_{t+4}^{(s)}^{S=1000}_s=1$ for each period up until the desired forecast horizon.
 
 \newpage
 ### **Exercise 9 - Predictive Density R Function**
@@ -463,6 +457,7 @@ Upon further inspection when analysing the posterior mean estimates for the para
 
 \newpage
 ### **Exercise 11 - Q4 2021 Forecast for 2022**
+
 ``` {r, message=FALSE}
 # FORECAST FUCNTIONS & PULLING ESTIMATES
 FORECAST                = FORECAST_FUNCTION(h, SAMPLER_OUTPUT)
@@ -552,4 +547,3 @@ RMSFE
 As postured in prior question answers, there are extreme issues in the model forecast estimation evident by this extraordinary large Root Mean Square Forecast Error. 
 
 This is a clear indication that the model is not yet fully-refined and if not constrained by time it would be beneficial to seek out, and identify more appropriate variables to use in the forecast estimation of hours worked.
-
