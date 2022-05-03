@@ -442,10 +442,10 @@ plot.ts(SAMPLER_OUTPUT$Ka[1000:S], main = "trace plots", xlab = "", ylab = "Ka")
 plot.ts(SAMPLER_OUTPUT$Ke[1000:S], main = "trace plots", xlab = "", ylab = "Ke")
 
 ## HISTOGRAMS
-hist(SAMPLER_OUTPUT$A[1000:S], main = "histograms", xlab = "",ylab = "A", col = mcxs2, breaks = 25)
-hist(SAMPLER_OUTPUT$E[1000:S], main = "histograms", xlab = "",ylab = "E", col = mcxs2, breaks = 25)
-hist(SAMPLER_OUTPUT$Ka[1000:S], main = "histograms", xlab = "",ylab = "Ka", col = mcxs2, breaks = 25)
-hist(SAMPLER_OUTPUT$Ke[1000:S], main = "histograms", xlab = "",ylab = "Ke", col = mcxs2, breaks = 25)
+hist(SAMPLER_OUTPUT$A[1000:S], main = "histograms", xlab = "",ylab = "A", col = "blue", breaks = 25)
+hist(SAMPLER_OUTPUT$E[1000:S], main = "histograms", xlab = "",ylab = "E", col = "blue", breaks = 25)
+hist(SAMPLER_OUTPUT$Ka[1000:S], main = "histograms", xlab = "",ylab = "Ka", col = "blue", breaks = 25)
+hist(SAMPLER_OUTPUT$Ke[1000:S], main = "histograms", xlab = "",ylab = "Ke", col = "blue", breaks = 25)
 
 
 ```
