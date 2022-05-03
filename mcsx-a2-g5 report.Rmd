@@ -190,11 +190,11 @@ Following a similar approach for $\kappa_\Sigma$;
 
 $p(\kappa_\Sigma |Y, X,\kappa_A,A,\Sigma) \propto p(A,\Sigma | \kappa_A,\kappa_\Sigma)p(\kappa_A)p(\kappa_\Sigma) $\\
 
-$= det(\kappa_\Sigma \underline{S})^\frac{-\underline{\nu}}{2}exp\{-\frac{1}{2}tr[\Sigma^{-1}(\kappa_\Sigma\underline{S})]exp\{-\frac{\kappa_\Sigma}{\underline{\beta}_\Sigma}(\kappa_\Sigma)^{\underline{\alpha}_\Sigma-1}\}$
+$= det(\kappa_\Sigma \underline{S})^\frac{-\underline{\nu}}{2}exp\{-\frac{1}{2}tr(\Sigma^{-1}(\kappa_\Sigma\underline{S})\}exp\{-\frac{\kappa_\Sigma}{\underline{\beta}_\Sigma}(\kappa_\Sigma)^{\underline{\alpha}_\Sigma-1}\}$
 
 $= \kappa_\Sigma^\frac{-N\underline{\nu}}{2} det(\underline{S})^\frac{\underline{\nu}}{2}exp(-\frac{1}{2}tr[\Sigma^{-1}(\kappa_\Sigma \underline{S})]+\frac{\kappa_\Sigma}{\underline{\beta}_\Sigma})$
 
-$=\kappa_\Sigma^{\frac{-N\underline{\nu}}{2}+\underline{\alpha} -1}exp[-\frac{1}{2}tr(\Sigma^{-1} \underline{S})+\frac{1}{\underline{\beta}_\Sigma})\kappa_\Sigma]$
+$=\kappa_\Sigma^{\frac{-N\underline{\nu}}{2}+\underline{\alpha} -1}exp[(-\frac{1}{2}tr(\Sigma^{-1} \underline{S})+\frac{1}{\underline{\beta}_\Sigma})\kappa_\Sigma]$
 
 Hence $\kappa_\Sigma \sim IG(\bar{\alpha}_\Sigma,\bar{\beta}_\Sigma)$
 
@@ -407,6 +407,7 @@ FORECAST_FUNCTION = function(h,SAMPLER_OUTPUT){
 ### **Exercise 10 - Parameter Estimates**
 
 ``` {r, message=FALSE}
+SAMPLER_OUTPUT = GIBBS_SAMPLER(S, Y , X, hyper)
 # POSTERIOR MEANS 
 A_SAMP_MEAN               = round(apply(SAMPLER_OUTPUT$A,2:3,mean),3)
 A_SAMP_SD                 = round(apply(SAMPLER_OUTPUT$A,2:3,sd),3)
